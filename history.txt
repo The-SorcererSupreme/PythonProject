@@ -1,0 +1,297 @@
+    1  sudo apt uppdate
+    2  sudo apt update
+    3  sudo apt upgrade -y
+    4  init 0
+    5  sudo ufw status
+    6  sudo ufw enable
+    7  sudo systemctl enable ufw
+    8  sudo ufw allow 22
+    9  sudo systemctl status ssh
+   10  sudo systemctl enable ssh
+   11  sudo systemctl status ssh
+   12  sudo init 0
+   13  for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+   14  sudo apt upgrade -y
+   15  sudo apt update
+   16  sudo apt upgrade -y
+   17  # Add Docker's official GPG key:
+   18  sudo apt-get update
+   19  sudo apt-get install ca-certificates curl
+   20  sudo install -m 0755 -d /etc/apt/keyrings
+   21  sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+   22  sudo chmod a+r /etc/apt/keyrings/docker.asc
+   23  # Add the repository to Apt sources:
+   24  echo   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+   25    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" |   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+   26  sudo apt-get update
+   27  sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+   28  sudo groupadd docker
+   29  sudo usermod -aG docker $USER
+   30  newgrp docker
+   31  docker run hello-world
+   32  docker ps
+   33  sudo systemctl enable docker.service
+   34  sudo systemctl enable containerd.service
+   35  sudo init 0
+   36  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+   37  export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+   38  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+   39  nvm install node
+   40  # installs nvm (Node Version Manager)
+   41  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+   42  # download and install Node.js (you may need to restart the terminal)
+   43  nvm install 22
+   44  # verifies the right Node.js version is in the environment
+   45  node -v # should print `v22.11.0`
+   46  # verifies the right npm version is in the environment
+   47  npm -v # should print `10.9.0`
+   48  history
+   49  vm
+   50  nvm
+   51  nvm --version
+   52  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+   53  export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+   54  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+   55  nvm --version
+   56  npm -v
+   57  node -v
+   58  sudo init 0
+   59  sudo ufw status
+   60  sudo systemctl status ssh
+   61  exit
+   62  sudo nano /etc/ssh/sshd_config
+   63  sudo systemctl reload ssh
+   64  sudo systemctl status ssh
+   65  npm install -g @angular/cli
+   66  npm fund
+   67  node --trace-warnings
+   68  npm fund
+   69  sudo init 0
+   70  sudo apt update
+   71  sudo apt upgrade
+   72  npm update
+   73  cd meal-planner
+   74  mkdir backend
+   75  mkdir frontend
+   76  mkdir backend/app
+   77  mkdir frontend/src
+   78  touch backend/Dockerfile
+   79  touch frontend/Dockerfile
+   80  touch backend/package.json
+   81  touch frontend/package.json
+   82  touch frontend/angular.json
+   83  touch docker-compose.yml
+   84  history
+   85  exit
+   86  docker compose version
+   87  sudo init 0
+   88  ng new angular-docker --ssr false --routing true --style scss
+   89  git config --global user.email "rollinger.christophe@gmail.com"
+   90  git config --global user.name "The-SorcererSupreme"
+   91  npm start
+   92  ng new angular-docker --ssr false --routing true --style scss
+   93  npm start
+   94  cd angular-docker/
+   95  npm start
+   96  sudo init 0
+   97  ng new frontend --ssr false --routing true --style scss
+   98  cd frontend/
+   99  docker build -t angular-docker .
+  100  docker images
+  101  docker ps
+  102  docker run -p 4201:4200 angular-docker
+  103  docker ps
+  104  docker stop dd
+  105  docker ps
+  106  sudo init 0
+  107  ip -br a
+  108  docker run -p 4201:4200 angular-docker
+  109  docker images
+  110  docker ps
+  111  docker stop *
+  112  docker stop all
+  113  docker stop 16
+  114  docker stop a5
+  115  docker stop 4c
+  116  docker ps
+  117  htop
+  118  init 6
+  119  history
+  120  $ docker exec -it $(docker run --rm -d $(docker build -q .)) bash
+  121  docker exec -it $(docker run --rm -d $(docker build -q .)) bash
+  122  cd backend/
+  123  docker exec -it $(docker run --rm -d $(docker build -q .)) bash
+  124  docker ps
+  125  ip -br a
+  126  docker ps
+  127  docker stop 15
+  128  cd ..
+  129  docker-compose up --build
+  130  sudo apt docker-compose
+  131  sudo apt install docker-compose
+  132  docker-compose up --build
+  133  docker ps
+  134  docker-compose up --build
+  135  docker-compose build --no-cache
+  136  npm version
+  137  cd backend/
+  138  docker build -t backend
+  139  docker build -t "backend"
+  140  docker build -t node-docker .
+  141  npm install -g npm@latest
+  142  docker build -t node-docker .
+  143  docker image
+  144  docker images
+  145  docker run node-docker
+  146  docker start node-docker
+  147  docker run -it node-docker
+  148  docker build -t node-docker .
+  149  docker images
+  150  docker run -it node-docker
+  151  docker run -p 3000:3000 node-docker
+  152  docker-compose build --no-cache
+  153  docker ps
+  154  cd ..
+  155  docker stop c1
+  156  docker stop ec
+  157  docker ps
+  158  docker-compose up --build
+  159  docker images
+  160  docker images angular-docker rm
+  161  docker images rm angular-docker
+  162  docker rmi  angular-docker:latest 
+  163  docker ps
+  164  docker stop 16
+  165  docker stop a5
+  166  docker stop 4c
+  167  docker ps
+  168  docker rmi  angular-docker:latest 
+  169  docker container
+  170  docker container prune
+  171  docker rmi  angular-docker:latest 
+  172  docker rmi hello-world:latest
+  173  docker rmi meal-planner_frontend:latest 
+  174  docker rmi meal-planner_backend:latest 
+  175  docker rmi mongo:latest
+  176  docker rmi mysql:lates
+  177  docker rmi node:16-alpine 
+  178  docker rmi node-docker:latest 
+  179  docker images
+  180  docker rmi a8 3d
+  181  docker-compose up --build
+  182  docker ps
+  183  docker images
+  184  docker containers
+  185  docker container
+  186  docker container ls
+  187  docker rmi meal-planner_backend:latest meal-planner_frontend:latest mongo:latest mysql:latest
+  188  docker-compose up --build
+  189  cd frontend/
+  190  npm -i
+  191  cd ..
+  192  docker-compose up --build
+  193  docker ps
+  194  docker stop c6 af 05
+  195  cd frontend/
+  196  docker images
+  197  docker run -p 4201:4200 angular-docker
+  198  cd ..
+  199  docker ps
+  200  docker stop 87
+  201  docker-compose up --build
+  202  cd frontend/
+  203  npm install
+  204  cd ..
+  205  docker-compose up --build
+  206  cd frontend/
+  207  docker build -t angular-docker .
+  208  docker run -it angular-docker
+  209  docker stop angular-docker
+  210  cd ..
+  211  cd frontend/
+  212  npm install
+  213  cd ..
+  214  docker ps
+  215  docker stop a4 44 91
+  216  docker images
+  217  docker container prune
+  218  docker build -t angular-docker .
+  219  docker ps
+  220  tree
+  221  sudo apt install tree
+  222  tree
+  223  tree .
+  224  tree -L 2
+  225  docker logs frontend
+  226  docker ps
+  227  docker stop 71 40 b4 dd
+  228  docker ps
+  229  docker images
+  230  docker images 2f
+  231  docker images rune 2f
+  232  docker images prune 2f
+  233  docker images --help
+  234  docker rmi --help
+  235  docker images
+  236  docker rmi 2f 7c cf
+  237  docker images
+  238  docker rmi 6d ca df 10
+  239  docker container --helo#
+  240  docker container --hel
+  241  docker container ls
+  242  docker container prune
+  243  docker rmi 6d ca df 10
+  244  docker imagfe
+  245  docker image
+  246  docker image ls
+  247  cd frontend/
+  248  docker build --help
+  249  docker build -t frontend .
+  250  docker image ls
+  251  docker images
+  252  docker ps
+  253  docker ps -a
+  254  docker psa
+  255  docker ps --help
+  256  docker images --help
+  257  docker images -a
+  258  docker --help
+  259  docker images
+  260  npm install
+  261  sudo init 6
+  262  docker-compose up --build
+  263  cd frontend/node_modules/
+  264  pwd
+  265  docker-compose up --build
+  266  docker compose up --build
+  267  cd ../..
+  268  docker ps
+  269  docker container prune
+  270  docker rmi angular-docker:latest meal-planner-backend:latest 
+  271  docker rmi mysql:latest 
+  272  docker rmi mongo:latest 
+  273  docker rmi meal-planner_frontend:latest meal-planner_backend:latest 
+  274  docker rmi meal-planner-frontend:latest meal-planner-frontend:latest
+  275  docker compose up --build
+  276  htop
+  277  cd frontend/
+  278  npm install
+  279  cd meal-planner/frontend/
+  280  npm install
+  281  init 0
+  282  cd PythonProject/frontend/python-project/
+  283  cd src/app/
+  284  ng generate service folder
+  285  cd ~/PythonProject/
+  286  git commit -m "Initial upload"
+  287  git push origin main
+  288  git remote -v
+  289  git ls-tree -r main --name-only
+  290  git rm -r --cached .
+  291  git add .
+  292  git ls-tree -r main --name-only
+  293  git commit -m "Update .gitignore and untrack ignored files"
+  294  git ls-tree -r main --name-only
+  295  git push
+  296  history
+  297  history > history.txt
