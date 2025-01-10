@@ -1,0 +1,98 @@
+/* You can add global styles to this file, and also import other style files */
+/* Apply Roboto font to the entire application */
+html, body {
+    height: 100%;
+}
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+  }
+
+  /* Style the main content area */
+  .content {
+    padding: 20px;
+  }
+  
+  h1 {
+    font-size: 2.5em;
+    font-weight: 500;
+    color: #3f51b5;
+  }
+  
+  mat-toolbar {
+    background-color: #3f51b5;
+    color: white;
+  }
+  
+  mat-sidenav {
+    background-color: #ffffff;
+    padding: 10px;
+  }
+  
+  /* Add some shadow to the sidenav */
+  mat-sidenav-container {
+    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
+    height: 100%;
+  }
+  
+  /* Style the tree nodes */
+  mat-tree-node {
+    display: flex;
+    align-items: center;
+    font-size: 1.1em;
+    padding: 5px 0;
+  }
+  
+  mat-tree-node button {
+    margin-right: 10px;
+  }
+  
+  mat-tree-node .mat-icon {
+    margin-right: 10px;
+    font-size: 20px;
+    color: #3f51b5;
+  }
+  
+  /* Style the folder icons */
+  .mat-tree-node-folder .mat-icon {
+    color: #607d8b;  /* Folder icon color */
+  }
+  
+  .mat-tree-node-file .mat-icon {
+    color: #8bc34a;  /* File icon color */
+  }
+  
+  /* Add hover effect for tree nodes */
+  mat-tree-node:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+  }
+  
+  /* Style the sidenav button */
+  button.mat-icon-button {
+    color: white;
+    background-color: transparent;
+    border-radius: 50%;
+  }
+  
+  button.mat-icon-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Sidenav toggle */
+  mat-sidenav-content {
+    margin-left: 60px; /* Adjust to make room for sidenav */
+  }
+  
+
+  /* Top nav */
+  .spacer {
+    flex: 1 1 auto; /* This makes the spacer expand and push the navigation buttons to the right */
+  }
+
+  button.mat-button.active {
+    background-color: #e40a0a; /* Example active background */
+  }
+  
