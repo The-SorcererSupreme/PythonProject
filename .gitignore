@@ -1,1 +1,13 @@
-*.pyc
+/frontend/python-project/package-lock.json
+/frontend/python-project/.angular
+/frontend/python-project/.vscode
+/frontend/python-project/node_modules
+/frontend/python-project/.editorconfig
+/frontend/python-project/angular.json
+/frontend/python-project/package-lock.json
+/frontend/python-project/server.ts
+/frontend/python-project/tsconfig.app.json
+/frontend/python-project/tsconfig.json
+/frontend/python-project/tsconfig.spec.json
+/frontend/python-project/whatgitignore
+/venv
