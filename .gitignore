@@ -1,14 +1,82 @@
-/frontend/python-project/package-lock.json
-/frontend/python-project/.angular
-/frontend/python-project/.vscode
-/frontend/python-project/node_modules
-/frontend/python-project/.editorconfig
-/frontend/python-project/angular.json
-/frontend/python-project/server.ts
-/frontend/python-project/tsconfig.app.json
-/frontend/python-project/tsconfig.json
-/frontend/python-project/tsconfig.spec.json
-/frontend/python-project/whatgitignore
-/frontend/package-lock.json
-/venv
-/history.txt
+#/frontend/python-project/package-lock.json
+#/frontend/python-project/.angular
+#/frontend/python-project/.vscode
+#/frontend/python-project/node_modules
+#/frontend/python-project/.editorconfig
+#/frontend/python-project/angular.json
+#/frontend/python-project/server.ts
+#/frontend/python-project/tsconfig.app.json
+#/frontend/python-project/tsconfig.json
+#/frontend/python-project/tsconfig.spec.json
+#/frontend/python-project/whatgitignore
+#/frontend/package-lock.json
+#/venv
+#/history.txt
+
+
+# Ignore Python virtual environment
+venv/
+*.pyc
+__pycache__/
+*.pyo
+
+# Ignore backend build artifacts
+backend/__pycache__/
+backend/*.pyc
+backend/src/app/__pycache__/
+
+# Ignore node_modules in frontend
+frontend/python-project/node_modules/
+
+# Ignore Angular build output
+frontend/python-project/dist/
+frontend/python-project/out-tsc/
+frontend/python-project/.angular/
+
+# Ignore logs and temporary files
+*.log
+tmp/
+out/
+*.tmp
+
+# Ignore editor-specific files
+.vscode/
+.idea/
+*.iml
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore sensitive data (example: environment files)
+frontend/python-project/src/environments/environment*.ts
+
+# Docker-related
+**/.docker/
+frontend/python-project/docker-compose.override.yml
+
+# Ignore unnecessary files at the project root
+history.txt
+whatgitignore
+
+# Ignore npm debug file
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore compiled files from TypeScript
+frontend/python-project/**/*.js
+frontend/python-project/**/*.map
+frontend/python-project/**/*.d.ts
+
+# Ignore output from tests
+frontend/python-project/coverage/
+frontend/python-project/junit-results.xml
+
+# Docker-related
+**/.dockerignore
+frontend/Dockerfile
+
+# Ignore cache folders
+frontend/python-project/.npm/
+frontend/python-project/.cache/
