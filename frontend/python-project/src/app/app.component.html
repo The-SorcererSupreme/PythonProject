@@ -1,53 +1,48 @@
-<mat-sidenav-container class="example-container">
-  <mat-sidenav #sidenav mode="side" opened>
-    <mat-nav-list>
-      <ng-container *ngFor="let folder of folders">
-        <button mat-list-item (click)="navigateToFolder(folder.name)">
-          <mat-icon>{{ folder.isFile ? 'insert_drive_file' : 'folder' }}</mat-icon>
-          {{ folder.name }}
-        </button>
-      </ng-container>
-    </mat-nav-list>
-  </mat-sidenav>
-  <!-- Side Navigation Bar -->
-  <!-- <mat-sidenav #sidenav mode="side" opened>
+<as-split direction="horizontal" style="height: 100%;">
+
+  <!-- Sidebar (Treeview) Section -->
+  <as-split-area [size]="30">
     <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+      <!-- Leaf Node (File) -->
       <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
-        <!-- Leaf Node (File)
         <button mat-icon-button disabled>
-          <mat-icon *ngIf="node.isFile">insert_drive_file</mat-icon>
-          <mat-icon *ngIf="!node.isFile">folder</mat-icon>
+          <mat-icon>insert_drive_file</mat-icon>
         </button>
-        {{node.name}}
+        <span [style.padding-left.px]="node.padding">{{ node.name }}</span>
       </mat-tree-node>
-  
-      <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodeToggle>
-        <!-- Expandable Node (Folder)
+
+      <!-- Expandable Node (Folder) -->
+      <mat-tree-node
+        *matTreeNodeDef="let node; when: hasChild"
+        matTreeNodeToggle
+        (expand)="onExpand(node)"
+      >
         <button mat-icon-button matTreeNodeToggle>
           <mat-icon>
-            {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+            {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
           </mat-icon>
         </button>
         <mat-icon>folder</mat-icon>
-        {{node.name}}
+        <span [style.padding-left.px]="node.padding">{{ node.name }}</span>
       </mat-tree-node>
     </mat-tree>
-  </mat-sidenav> -->
+  </as-split-area>
 
   <!-- Main Content Area -->
-  <mat-sidenav-content>
-    <!-- Top Navigation Bar -->
-    <mat-toolbar color="primary">
-      <button mat-icon-button (click)="toggleSidenav(sidenav)">
-        <mat-icon>menu</mat-icon>
-      </button>
-      <span>Show folders</span>
-      <!-- Navigation buttons -->
-      <span class="spacer"></span> <!-- Spacer to push buttons to the right -->
-      <button mat-button routerLink="/" routerLinkActive="active">Home</button>
-      <button mat-button routerLink="/feature1" routerLinkActive="active">Feature 1</button>
-      <button mat-button routerLink="/feature2" routerLinkActive="active">Feature 2</button>
-    </mat-toolbar>
-    <router-outlet />
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  <as-split-area [size]="70">
+    <div class="mat-sidenav-content">
+      <mat-toolbar color="primary">
+        <button mat-icon-button>
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span>Show folders</span>
+        <span class="spacer"></span>
+        <button mat-button routerLink="/" routerLinkActive="active">Home</button>
+        <button mat-button routerLink="/feature1" routerLinkActive="active">Feature 1</button>
+        <button mat-button routerLink="/feature2" routerLinkActive="active">Feature 2</button>
+      </mat-toolbar>
+      <router-outlet></router-outlet>
+    </div>
+  </as-split-area>
+
+</as-split>

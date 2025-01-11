@@ -1,0 +1,48 @@
+
+<mat-sidenav-container class="example-container">
+  <!-- Sidebar -->
+  <mat-sidenav #sidenav mode="side" opened class="resizable-sidenav">
+    <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+      <!-- Leaf Node (File) -->
+      <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
+        <button mat-icon-button disabled>
+          <mat-icon>insert_drive_file</mat-icon>
+        </button>
+        <span [style.padding-left.px]="node.padding">{{ node.name }}</span>
+      </mat-tree-node>
+
+      <!-- Expandable Node (Folder) -->
+      <mat-tree-node
+        *matTreeNodeDef="let node; when: hasChild"
+        matTreeNodeToggle
+        (expand)="onExpand(node)"
+      >
+        <button mat-icon-button matTreeNodeToggle>
+          <mat-icon>
+            {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
+          </mat-icon>
+        </button>
+        <mat-icon>folder</mat-icon>
+        <span [style.padding-left.px]="node.padding">{{ node.name }}</span>
+      </mat-tree-node>
+    </mat-tree>
+
+    <!-- Resizer -->
+    <div class="resizer" (mousedown)="startResize($event)"></div>
+  </mat-sidenav>
+
+  <!-- Main Content Area -->
+  <mat-sidenav-content class="mat-sidenav-content">
+    <mat-toolbar color="primary">
+      <button mat-icon-button (click)="toggleSidenav(sidenav)">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>Show folders</span>
+      <span class="spacer"></span>
+      <button mat-button routerLink="/" routerLinkActive="active">Home</button>
+      <button mat-button routerLink="/feature1" routerLinkActive="active">Feature 1</button>
+      <button mat-button routerLink="/feature2" routerLinkActive="active">Feature 2</button>
+    </mat-toolbar>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

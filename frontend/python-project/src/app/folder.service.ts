@@ -1,18 +1,19 @@
 // src/app/services/folder.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, timer } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root', // Automatically makes it available across the app
 })
 export class FolderService {
-  private apiUrl = 'http://127.0.0.1:5000/api/files'; // Adjust URL if needed
+  private baseUrl = 'http://localhost:5000/api/files'; // Update with your API URL
 
   constructor(private http: HttpClient) {}
 
   getFolderContents(path: string = ''): Observable<any> {
-    const url = `${this.apiUrl}?path=${path}`;
-    return this.http.get(url);
+    const url = path ? `${this.baseUrl}?path=${path}` : this.baseUrl;
+    return timer(300).pipe(switchMap(() => this.http.get(url))); // Add 300ms debounce
   }
 }

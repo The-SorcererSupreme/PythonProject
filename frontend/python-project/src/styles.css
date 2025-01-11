@@ -1,98 +1,147 @@
-/* You can add global styles to this file, and also import other style files */
-/* Apply Roboto font to the entire application */
+/* Global Styles */
 html, body {
-    height: 100%;
+  height: 100%;
 }
 body {
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f5f5f5;
-  }
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+}
 
-  /* Style the main content area */
-  .content {
-    padding: 20px;
-  }
-  
-  h1 {
-    font-size: 2.5em;
-    font-weight: 500;
-    color: #3f51b5;
-  }
-  
-  mat-toolbar {
-    background-color: #3f51b5;
-    color: white;
-  }
-  
-  mat-sidenav {
-    background-color: #ffffff;
-    padding: 10px;
-  }
-  
-  /* Add some shadow to the sidenav */
-  mat-sidenav-container {
-    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
-    height: 100%;
-  }
-  
-  /* Style the tree nodes */
-  mat-tree-node {
-    display: flex;
-    align-items: center;
-    font-size: 1.1em;
-    padding: 5px 0;
-  }
-  
-  mat-tree-node button {
-    margin-right: 10px;
-  }
-  
-  mat-tree-node .mat-icon {
-    margin-right: 10px;
-    font-size: 20px;
-    color: #3f51b5;
-  }
-  
-  /* Style the folder icons */
-  .mat-tree-node-folder .mat-icon {
-    color: #607d8b;  /* Folder icon color */
-  }
-  
-  .mat-tree-node-file .mat-icon {
-    color: #8bc34a;  /* File icon color */
-  }
-  
-  /* Add hover effect for tree nodes */
-  mat-tree-node:hover {
-    background-color: #f1f1f1;
-    cursor: pointer;
-  }
-  
-  /* Style the sidenav button */
-  button.mat-icon-button {
-    color: white;
-    background-color: transparent;
-    border-radius: 50%;
-  }
-  
-  button.mat-icon-button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  
-  /* Sidenav toggle */
-  mat-sidenav-content {
-    margin-left: 60px; /* Adjust to make room for sidenav */
-  }
-  
+/* Style the main content area */
+.content {
+  padding: 20px;
+}
 
-  /* Top nav */
-  .spacer {
-    flex: 1 1 auto; /* This makes the spacer expand and push the navigation buttons to the right */
-  }
+h1 {
+  font-size: 2.5em;
+  font-weight: 500;
+  color: #3f51b5;
+}
 
-  button.mat-button.active {
-    background-color: #e40a0a; /* Example active background */
-  }
-  
+mat-toolbar {
+  background-color: #3f51b5;
+  color: white;
+}
+
+mat-sidenav {
+  background-color: #ffffff;
+  padding: 10px;
+  resize: horizontal;  /* Allows resizing horizontally */
+  overflow: hidden;    /* Prevents vertical scrollbar */
+  min-width: 200px;     /* Set a minimum width */
+  max-width: 500px;     /* Set a maximum width if necessary */
+}
+
+/* Sidenav container: Flex layout */
+.mat-sidenav-container {
+  display: flex;
+  height: 100vh; /* Ensure the container takes full height */
+  width: 100%;   /* Full width of the page */
+  flex-direction: row; /* Horizontal layout */
+}
+
+/* Sidenav: Prevent shrinking, allow resizing */
+.mat-sidenav {
+  flex-shrink: 0; /* Prevent sidebar from shrinking */
+  width: auto; /* Allow flexible width */
+  min-width: 200px;  /* Minimum width for the sidebar */
+  max-width: 500px;  /* Maximum width for the sidebar */
+  transition: width 0.2s ease-in-out; /* Smooth resizing */
+}
+
+/* Main content: Flex grow to fill remaining space */
+.mat-sidenav-content {
+  flex-grow: 1; /* Allow the content to grow and take up available space */
+  overflow: auto; /* Allow scrolling when content overflows */
+  padding: 20px;
+}
+
+/* Styling tree nodes */
+.mat-tree-node {
+  display: flex;
+  align-items: center;
+  font-size: 1.1em;
+  padding: 5px 0;
+}
+
+.mat-tree-node button {
+  margin-right: 10px;
+}
+
+.mat-tree-node .mat-icon {
+  margin-right: 10px;
+  font-size: 20px;
+  color: #3f51b5;
+}
+
+.mat-tree-node-folder .mat-icon {
+  color: #607d8b;  /* Folder icon color */
+}
+
+.mat-tree-node-file .mat-icon {
+  color: #8bc34a;  /* File icon color */
+}
+
+mat-tree-node:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+
+/* Style the sidenav button */
+button.mat-icon-button {
+  color: white;
+  background-color: transparent;
+  border-radius: 50%;
+}
+
+button.mat-icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Spacer for top navigation */
+.spacer {
+  flex: 1 1 auto; /* This makes the spacer expand and push the navigation buttons to the right */
+}
+
+/* Button active state */
+button.mat-button.active {
+  background-color: #e40a0a; /* Example active background */
+}
+
+/* Optional: Debug borders to see structure */
+.example-container {
+  border: 1px solid red;
+  display: flex;
+  height: 100vh; /* Ensure the container fills the screen height */
+}
+
+/* Ensure the split has smooth transitions */
+as-split-area {
+  transition: all 0.2s ease-in-out;  /* Smooth transition for resizing */
+}
+
+/* Optional: Add other styles as needed */
+.mat-sidenav-content {
+  padding: 20px;
+}
+
+.mat-toolbar {
+  background-color: #3f51b5;
+  color: white;
+}
+
+button.mat-icon-button {
+  color: white;
+  background-color: transparent;
+  border-radius: 50%;
+}
+
+button.mat-icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.spacer {
+  flex: 1;
+}

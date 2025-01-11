@@ -10,7 +10,7 @@ CORS(app, origins="http://localhost:4200")
 def get_directory_structure():
     # Fetch the current directory
     cwd = os.getcwd()
-    subfolder = "src/app/"
+    subfolder = "../../"
     current_dir = os.path.join(cwd, subfolder)
 
     def list_files_and_folders(path):

@@ -4,7 +4,7 @@ sudo apt-get upgrade -y
 #git config --global user.name <username>
 #git config --global user.email <user-mail>
 cd ~
-git clone https://github.com/The-SorcererSupreme/PythonProject.git
+#git clone https://github.com/The-SorcererSupreme/PythonProject.git
 sudo apt-get install -y python3 python3-pip python3-venv
 cd ~/PythonProject/backend/
 python3 -m venv venv
@@ -12,12 +12,13 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 source ~/.bashrc
 #nvm list-remote
-nvm install v22.13.0
+#nvm install v22.13.0
 npm install -g @angular/cli
 npm install -g npm@11.0.0
 cd ~/PythonProject/frontend/python-project/
 npm install
 source ~/PythonProject/backend/venv/bin/activate
+cd ~/PythonProject/backend/src/
 pip install -r requirements.txt
 #pip3 install flask-cors
 #python3 server.py
