@@ -1,49 +1,32 @@
-<as-split direction="horizontal" style="height: 100%;">
+<mat-toolbar color="primary">
+  <button mat-icon-button>
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span>Show folders</span>
+  <span class="spacer"></span>
+  <p-button label="Check" />
+  <button mat-button routerLink="/" routerLinkActive="active">Home</button>
+  <button mat-button routerLink="/feature1" routerLinkActive="active">Feature 1</button>
+  <button mat-button routerLink="/feature2" routerLinkActive="active">Feature 2</button>
+</mat-toolbar>
+
+<as-split direction="horizontal" class="split-container">
 
   <!-- Sidebar (Treeview) Section -->
-  <as-split-area [size]="30">
-    <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
-      <!-- Leaf Node (File) -->
-      <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
-        <button mat-icon-button disabled>
-          <mat-icon>insert_drive_file</mat-icon>
-        </button>
-        <span [style.padding-left.px]="node.padding">{{ node.name }}</span>
-      </mat-tree-node>
-
-      <!-- Expandable Node (Folder) -->
-      <mat-tree-node
-        *matTreeNodeDef="let node; when: hasChild"
-        matTreeNodeToggle
-        (expand)="onExpand(node)"
-      >
-        <button mat-icon-button matTreeNodeToggle>
-          <mat-icon>
-            {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
-          </mat-icon>
-        </button>
-        <mat-icon>folder</mat-icon>
-        <span [style.padding-left.px]="node.padding">{{ node.name }}</span>
-      </mat-tree-node>
-    </mat-tree>
+  <as-split-area [size]="15" class="left-area">
+    <p-tree class="sidebar-tree"
+      [value]="nodes"
+      selectionMode="single"
+      [(selection)]="selectedNode"
+      (onNodeSelect)="onNodeSelect($event)"
+      loadingIcon="pi pi-spinner"
+      [loading]="loading"
+    ></p-tree>
   </as-split-area>
 
   <!-- Main Content Area -->
-  <as-split-area [size]="70">
-    <div class="mat-sidenav-content">
-      <mat-toolbar color="primary">
-        <button mat-icon-button>
-          <mat-icon>menu</mat-icon>
-        </button>
-        <span>Show folders</span>
-        <span class="spacer"></span>
-        <p-button label="Check" />
-        <button mat-button routerLink="/" routerLinkActive="active">Home</button>
-        <button mat-button routerLink="/feature1" routerLinkActive="active">Feature 1</button>
-        <button mat-button routerLink="/feature2" routerLinkActive="active">Feature 2</button>
-      </mat-toolbar>
-      <router-outlet></router-outlet>
-    </div>
+  <as-split-area [size]="85">
+    <router-outlet></router-outlet>
   </as-split-area>
 
 </as-split>

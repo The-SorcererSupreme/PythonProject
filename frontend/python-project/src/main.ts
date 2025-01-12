@@ -8,6 +8,7 @@ import { AppComponent } from './app/app.component';
 import { HomeComponent } from './app/home/home.component';
 import { Feature1Component } from './app/feature1/feature1.component';
 import { Feature2Component } from './app/feature2/feature2.component';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 // Define your routes with the standalone components
 const routes = [
@@ -21,6 +22,6 @@ bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),  // Register routes
     provideAnimations(),     // Provide animations for Angular Material
-    provideHttpClient(),
+    provideHttpClient(), provideAnimationsAsync(),
   ],
 }).catch((err) => console.error(err));

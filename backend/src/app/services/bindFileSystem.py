@@ -4,13 +4,13 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-CORS(app, origins="http://localhost:4200")
+CORS(app, origins="*")
 
 @app.route('/api/files', methods=['GET'])
 def get_directory_structure():
     # Fetch the current directory
     cwd = os.getcwd()
-    subfolder = "../../"
+    subfolder = "../../../../"
     current_dir = os.path.join(cwd, subfolder)
 
     def list_files_and_folders(path):

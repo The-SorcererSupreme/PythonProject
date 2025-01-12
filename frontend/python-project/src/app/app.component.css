@@ -1,0 +1,14 @@
+/* Ensure the split container takes full height minus toolbar */
+.split-container {
+    height: calc(100vh - 64px); /* Assuming the toolbar height is 64px */
+  }
+  
+  /* Make the left area (tree) fill 100% height and be scrollable */
+  .left-area {
+    height: 100%; /* Take up the full height of the split area */
+  }
+  
+  .left-area p-tree {
+    height: 100%;        /* Ensure p-tree takes full height of its parent */
+    overflow: auto;      /* Enable scrollbars when content overflows */
+  }
