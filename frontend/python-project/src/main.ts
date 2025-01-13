@@ -2,6 +2,7 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
+import { provideCodeEditor } from '@ngstack/code-editor';
 
 // Import your standalone components
 import { AppComponent } from './app/app.component';
@@ -22,6 +23,8 @@ bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),  // Register routes
     provideAnimations(),     // Provide animations for Angular Material
-    provideHttpClient(), provideAnimationsAsync(),
+    provideHttpClient(),
+    provideAnimationsAsync(),
+    provideCodeEditor(),
   ],
 }).catch((err) => console.error(err));

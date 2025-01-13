@@ -30,7 +30,6 @@ const routes: Routes = [
     RouterModule.forRoot(routes), // Register the routes here
     MaterialModule, // Register your Material Module
     HttpClient,
-    //EditorModule,
   ],
   providers: [
     //provideCodeEditor(),
