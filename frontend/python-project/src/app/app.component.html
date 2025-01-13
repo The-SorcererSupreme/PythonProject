@@ -26,7 +26,16 @@
 
   <!-- Main Content Area -->
   <as-split-area [size]="85">
-    <router-outlet></router-outlet>
+    <div *ngIf="fileContent; else noContent">
+      <h3>File Content:</h3>
+      <pre>{{ fileContent }}</pre>
+    </div>
+    <ng-template #noContent>
+      <p>Select a file to display its content</p>
+    </ng-template>
+    <router-outlet>
+
+    </router-outlet>
   </as-split-area>
 
 </as-split>

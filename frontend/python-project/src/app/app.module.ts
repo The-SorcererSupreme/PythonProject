@@ -2,7 +2,8 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { MaterialModule } from './material.module';
 import { RouterModule, Routes } from '@angular/router';
-import { HttpClient, HttpClientModule } from '@angular/common/http'; // Use this for module-based apps
+import { HttpClient } from '@angular/common/http'; // Use this for module-based apps
+import { provideCodeEditor } from '@ngstack/code-editor';
 
 // Import components that aren't standalone (if needed, otherwise omit them)
 import { AppComponent } from './app.component';
@@ -27,9 +28,12 @@ const routes: Routes = [
     BrowserModule,
     RouterModule.forRoot(routes), // Register the routes here
     MaterialModule, // Register your Material Module
-    HttpClientModule,
+    HttpClient,
+    provideCodeEditor(), //may be deleted
   ],
-  providers: [],
+  providers: [
+    provideCodeEditor(),
+  ],
   bootstrap: [AppComponent], // Set the bootstrap component
 })
 export class AppModule {}
