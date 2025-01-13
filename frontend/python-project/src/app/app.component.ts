@@ -36,7 +36,7 @@ import { FileContentComponent } from './file-content/file-content.component';
     styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  loading: boolean = false; // Indicates whether data is being loaded
+  //loading: boolean = false; // Indicates whether data is being loaded
   //nodes: TreeNode[] = []; // Tree structure for <p-tree>
   //selectedNode: TreeNode | null = null; // Selected node
   //currentPath: string = ''; // Keeps track of the current folder path

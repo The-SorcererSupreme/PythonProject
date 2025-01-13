@@ -1,14 +1,19 @@
 import { Component, ChangeDetectorRef, OnChanges, SimpleChanges, Input } from '@angular/core';
 import { FolderService } from '../folder.service';
 import { NgIf } from '@angular/common';
+import { CodeEditorComponent } from '../code-editor/code-editor.component';
 
 @Component({
   selector: 'app-file-content',
   standalone: true,
-  imports: [NgIf],
+  imports: [
+    NgIf,
+    CodeEditorComponent,
+  ],
   templateUrl: './file-content.component.html',
   styleUrl: './file-content.component.css'
 })
+
 export class FileContentComponent {
   @Input() filePath: string | null = null; // Accept filePath as input
   loading: boolean = false;
@@ -20,6 +25,7 @@ export class FileContentComponent {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['filePath'] && this.filePath) {
       // Call fetchFileContent when the filePath input changes
+      this.fileContent = "",
       this.fetchFileContent(this.filePath);
     }
   }

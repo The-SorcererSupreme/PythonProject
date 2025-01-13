@@ -1,4 +1,4 @@
-<div *ngIf="fileContent; else noContent">
+<div *ngIf="fileContent !== null; else noContent">
     <h3>File Content:</h3>
     <pre>{{ fileContent }}</pre>
   </div>
@@ -10,5 +10,8 @@
   </div>
   <div *ngIf="errorMessage">
     <p>Error: {{ errorMessage }}</p>
+  </div>
+  <div>
+    <app-code-editor></app-code-editor>
   </div>
   

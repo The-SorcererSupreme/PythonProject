@@ -3,7 +3,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { MaterialModule } from './material.module';
 import { RouterModule, Routes } from '@angular/router';
 import { HttpClient } from '@angular/common/http'; // Use this for module-based apps
-import { provideCodeEditor } from '@ngstack/code-editor';
+//import { provideCodeEditor } from '@ngstack/code-editor';
+//import { EditorModule } from 'primeng/editor';
 
 // Import components that aren't standalone (if needed, otherwise omit them)
 import { AppComponent } from './app.component';
@@ -29,10 +30,10 @@ const routes: Routes = [
     RouterModule.forRoot(routes), // Register the routes here
     MaterialModule, // Register your Material Module
     HttpClient,
-    provideCodeEditor(), //may be deleted
+    //EditorModule,
   ],
   providers: [
-    provideCodeEditor(),
+    //provideCodeEditor(),
   ],
   bootstrap: [AppComponent], // Set the bootstrap component
 })
