@@ -14,28 +14,16 @@
 
   <!-- Sidebar (Treeview) Section -->
   <as-split-area [size]="15" class="left-area">
-    <p-tree class="sidebar-tree"
-      [value]="nodes"
-      selectionMode="single"
-      [(selection)]="selectedNode"
-      (onNodeSelect)="onNodeSelect($event)"
-      loadingIcon="pi pi-spinner"
-      [loading]="loading"
-    ></p-tree>
+    <app-file-environment (fileSelected)="onFileSelected($event)"></app-file-environment>
   </as-split-area>
 
   <!-- Main Content Area -->
   <as-split-area [size]="85">
-    <div *ngIf="fileContent; else noContent">
-      <h3>File Content:</h3>
-      <pre>{{ fileContent }}</pre>
-    </div>
-    <ng-template #noContent>
-      <p>Select a file to display its content</p>
-    </ng-template>
     <router-outlet>
-
+      
     </router-outlet>
-  </as-split-area>
+    <app-file-content [filePath]="selectedFilePath"></app-file-content>
 
+
+  </as-split-area>
 </as-split>

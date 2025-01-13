@@ -1,0 +1,8 @@
+<p-tree class="sidebar-tree"
+      [value]="nodes"
+      selectionMode="single"
+      [(selection)]="selectedNode"
+      (onNodeSelect)="onNodeSelect($event)"
+      loadingIcon="pi pi-spinner"
+      [loading]="loading"
+></p-tree>
