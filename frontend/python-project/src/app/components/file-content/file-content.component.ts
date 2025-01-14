@@ -1,13 +1,15 @@
 import { Component, ChangeDetectorRef, OnChanges, SimpleChanges, Input,CUSTOM_ELEMENTS_SCHEMA  } from '@angular/core';
-import { FolderService } from '../folder.service';
+import { FolderService } from '../../services/folder.service';
 import { NgIf } from '@angular/common';
 import { CodeModel } from '@ngstack/code-editor';
+import { NgxDropzoneModule } from 'ngx-dropzone';
 
 @Component({
   selector: 'app-file-content',
   standalone: true,
   imports: [
     NgIf,
+    NgxDropzoneModule,
   ],
   templateUrl: './file-content.component.html',
   styleUrl: './file-content.component.css'
@@ -20,8 +22,9 @@ export class FileContentComponent {
   fileLanguage: string = 'plaintext'; // Default language
   errorMessage: string | null = null;
   
+  constructor(private folderService: FolderService, private cdr: ChangeDetectorRef) {}
 
-
+/*
   theme = 'vs-dark'; // Monaco editor theme
   model: CodeModel = {
     language: 'typescript', // Default language
@@ -33,9 +36,8 @@ export class FileContentComponent {
     minimap: {
       enabled: true,
     },
-  };
+  };*/
 
-  constructor(private folderService: FolderService, private cdr: ChangeDetectorRef) {}
   
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['filePath'] && this.filePath) {
@@ -52,7 +54,7 @@ export class FileContentComponent {
         next: (response: any) => {
           if (response.success) {
             this.fileContent = response.content;
-            this.fileLanguage = this.getFileLanguage(path); // Detect language
+            //this.fileLanguage = this.getFileLanguage(path); // Detect language
             console.log('Successfuly fetched file content:', this.fileContent);
             this.cdr.markForCheck(); // Trigger Change Detection
           } else {
@@ -67,7 +69,7 @@ export class FileContentComponent {
       });
   }
 
-   // Detect language based on file extension
+   /* // Detect language based on file extension
    getFileLanguage(filePath: string): string {
     const extension = filePath.split('.').pop();
     switch (extension) {
@@ -82,9 +84,9 @@ export class FileContentComponent {
     }
   }
 
-    // Handle user code changes
-    onCodeChange(updatedCode: string): void {
+  // Handle user code changes
+  onCodeChange(updatedCode: string): void {
       console.log('Code updated:', updatedCode);
       this.fileContent = updatedCode; // Update file content with edits
-  }
+  }*/
 }

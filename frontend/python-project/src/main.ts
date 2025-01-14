@@ -1,30 +1,22 @@
+//frontend/python-project/src/main.ts
+
+// Import your standalone AppComponent
+import { AppComponent } from './app/app.component';
+
+// Import other things
+import { routes } from './app/app.routes';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 import { provideCodeEditor } from '@ngstack/code-editor';
 
-// Import your standalone components
-import { AppComponent } from './app/app.component';
-import { HomeComponent } from './app/home/home.component';
-import { Feature1Component } from './app/feature1/feature1.component';
-import { Feature2Component } from './app/feature2/feature2.component';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-
-// Define your routes with the standalone components
-const routes = [
-  { path: '', component: HomeComponent },
-  { path: 'feature1', component: Feature1Component },
-  { path: 'feature2', component: Feature2Component },
-];
-
 // Bootstrap the standalone AppComponent
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),  // Register routes
-    provideAnimations(),     // Provide animations for Angular Material
-    provideHttpClient(),
-    provideAnimationsAsync(),
-    provideCodeEditor(),
+    provideAnimations(),   // Provide animations
+    provideHttpClient(),   // HTTP client for API calls
+    provideCodeEditor(),   // Code editor functionality
   ],
 }).catch((err) => console.error(err));

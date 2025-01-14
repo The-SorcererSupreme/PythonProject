@@ -9,7 +9,7 @@ import { switchMap } from 'rxjs/operators';
 export class FolderService {
   private baseUrl = 'http://localhost:5000/api'; // Base URL for API
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,) {}
 
   // Method to get folder contents
   getFolderContents(path: string = ''): Observable<any> {

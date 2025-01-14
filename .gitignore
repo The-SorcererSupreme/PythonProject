@@ -13,9 +13,8 @@
 #/venv
 #/history.txt
 
-
 # Ignore Python virtual environment
-venv/
+venv/*
 *.pyc
 __pycache__/
 *.pyo
@@ -24,6 +23,7 @@ __pycache__/
 backend/__pycache__/
 backend/*.pyc
 backend/src/app/__pycache__/
+backend/venv/*
 
 # Ignore node_modules in frontend
 frontend/python-project/node_modules/

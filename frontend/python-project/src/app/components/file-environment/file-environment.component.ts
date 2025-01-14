@@ -1,7 +1,11 @@
 import { Component,OnInit,EventEmitter,Output } from '@angular/core';
-import { FolderService } from '../folder.service';
+import { FolderService } from '../../services/folder.service';
 import { TreeModule } from 'primeng/tree';
-import { FileContentComponent } from '../file-content/file-content.component';
+import { HttpClient } from '@angular/common/http';
+import { FileContentComponent } from '../../components/file-content/file-content.component';
+import { FileUploadService } from '../../services/file-upload.service';
+import { NgxDropzoneModule } from 'ngx-dropzone'; // Import the dropzone module
+import { NgIf, NgFor } from '@angular/common';
 
 interface TreeNode {
   label: string;
@@ -16,6 +20,9 @@ interface TreeNode {
   imports: [
     TreeModule,
     FileContentComponent,
+    NgxDropzoneModule,
+    NgIf,
+    NgFor,
   ],
   providers: [
     FileContentComponent
@@ -25,7 +32,7 @@ interface TreeNode {
 })
 
 
-export class FileEnvironmentComponent implements OnInit {
+export class FileEnvironmentComponent /*implements OnInit*/ {
   @Output() fileSelected = new EventEmitter<string>(); // Emit selected file path
 
   loading: boolean = false; // Indicates whether data is being loaded
@@ -33,12 +40,17 @@ export class FileEnvironmentComponent implements OnInit {
   selectedNode: TreeNode | null = null; // Selected node
   currentPath: string = ''; // Keeps track of the current folder path
   fileContent: string | null = null; // Content of the selected file
+  files: File[] = [];
+  contentLoaded = false;
 
-  constructor(private folderService: FolderService, private loadContent: FileContentComponent) {}
+  constructor(private folderService: FolderService,
+    private loadContent: FileContentComponent,
+    private fileUploadService: FileUploadService,
+    private http: HttpClient,) {}
 
-  ngOnInit() {
+  /*ngOnInit() {
     this.loadFolderContents();
-  }
+  }*/
 
   // Loads the contents of the current folder or a specified path
   loadFolderContents(path: string = '') {
@@ -63,7 +75,6 @@ export class FileEnvironmentComponent implements OnInit {
   // Processes raw folder data into a tree structure
   processFolders(data: any[], currentPath: string = ''): TreeNode[] {
     //console.log('Processing folder data for path:', currentPath); // Debug log
-  
     return data.map((item) => {
       const fullPath = `${currentPath}/${item.name}`; // Generate full path for the node
       const nodePath = item.path || fullPath; // Generate full path for the node
@@ -99,4 +110,44 @@ export class FileEnvironmentComponent implements OnInit {
       }
     }
   }
+
+  onDrop(event: any) {
+    console.log('Drop event:', event);
+
+    if (event && event.addedFiles) {
+      this.files = event.addedFiles;
+      console.log('Files dropped:', this.files);
+      this.uploadFiles(this.files);
+    } else {
+      console.log('No files added.');
+    }
+
+    // Once files are added, content is considered loaded
+    this.contentLoaded = true;
+  }
+
+  uploadFiles(files: File[]) {
+    this.fileUploadService.uploadFiles(files).subscribe({
+      next: (response) => {
+        console.log('Upload successful:', response);
+      },
+      error: (error) => {
+        console.error('Upload failed:', error);
+      },
+      complete: () => {
+        console.log('File upload process completed.');
+      }
+    });
+  }
+  
+
+  // Placeholder methods for button actions
+  connectToGit() {
+    console.log('Connect to Git clicked');
+  }
+
+  connectViaAgent() {
+    console.log('Connect via Agent clicked');
+  }
+
 }

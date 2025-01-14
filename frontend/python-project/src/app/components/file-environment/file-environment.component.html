@@ -1,0 +1,24 @@
+<div class="sidebar-container">
+      <!-- Only show the p-tree when content is loaded -->
+      <p-tree *ngIf="contentLoaded" class="sidebar-tree"
+              [value]="nodes"
+              selectionMode="single"
+              [(selection)]="selectedNode"
+              (onNodeSelect)="onNodeSelect($event)"
+              loadingIcon="pi pi-spinner"
+              [loading]="loading">
+      </p-tree>
+    
+      <!-- Show options to connect when no content is loaded -->
+      <div *ngIf="!contentLoaded" class="drag-drop-area">
+        <ngx-dropzone (change)="onDrop($event)" [multiple]="false" [accept]="'*, application/zip, application/x-zip-compressed'">
+          <div class="dropzone-label">Drag and drop your .zip archive here</div>
+          <div *ngIf="files.length" class="file-list">
+            <div *ngFor="let file of files">{{ file.name }}</div>
+          </div>
+        </ngx-dropzone>
+        <button (click)="connectToGit()">Connect to Git</button>
+        <button (click)="connectViaAgent()">Connect via Agent</button>
+      </div>
+</div>
+    

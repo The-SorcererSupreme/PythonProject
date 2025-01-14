@@ -1,3 +1,4 @@
+// /frontend/python-project/src/app/app.component.ts
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -11,10 +12,11 @@ import { AngularSplitModule } from 'angular-split';
 import { ButtonModule } from 'primeng/button';
 
 //import { CodeEditorComponent, CodeModel } from '@ngstack/code-editor';
-import { FileEnvironmentComponent } from './file-environment/file-environment.component';
-import { FileContentComponent } from './file-content/file-content.component';
+import { FileEnvironmentComponent } from './components/file-environment/file-environment.component';
+import { FileContentComponent } from './components/file-content/file-content.component';
 @Component({
     selector: 'app-root',
+    standalone: true,
     imports: [
         RouterOutlet,
         RouterLink,

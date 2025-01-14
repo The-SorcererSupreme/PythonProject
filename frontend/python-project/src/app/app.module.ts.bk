@@ -1,3 +1,4 @@
+// //frontend/python-project/src/app/app.module.ts
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { MaterialModule } from './material.module';
