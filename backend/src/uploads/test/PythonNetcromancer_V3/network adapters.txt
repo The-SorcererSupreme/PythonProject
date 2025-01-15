@@ -1,3 +1,0 @@
-Adapter 1 - Bridged - enp0s3 - DHCP - web access
-Adapter 2 - NAT - enp0s8 - DHCP - ssh access
-Adapter 3 - Host Only - / - DHCP - docker #not in use yet
