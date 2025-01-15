@@ -1,3 +1,4 @@
+// /frontend/python-project/src/app/components/file-environment/file-environment.component.ts
 import { Component,OnInit,EventEmitter,Output } from '@angular/core';
 import { FolderService } from '../../services/folder.service';
 import { TreeModule } from 'primeng/tree';
@@ -51,6 +52,27 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
   /*ngOnInit() {
     this.loadFolderContents();
   }*/
+    ngOnInit() {
+      this.loadFolderStructureFromStorage();
+    }
+  
+    loadFolderStructureFromStorage() {
+      const savedStructure = localStorage.getItem('folderStructure');
+      if (savedStructure) {
+        this.nodes = JSON.parse(savedStructure);
+        console.log('Loaded folder structure from localStorage:', this.nodes);
+        this.contentLoaded = true; // Mark content as loaded
+      } else {
+        console.log('No folder structure found in localStorage.');
+      }
+    }
+
+    clearFolderStructure() {
+      localStorage.removeItem('folderStructure');
+      this.nodes = []; // Reset the nodes
+      this.contentLoaded = false; // Mark content as not loaded
+      console.log('Folder structure cleared.');
+    }
 
   // Loads the contents of the current folder or a specified path
   loadFolderContents(path: string = '') {
@@ -63,6 +85,7 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
         console.log(path)
         console.log(this.currentPath)
         this.loading = false; // Hide loading indicator
+        this.contentLoaded = true;
       },
       error: (err) => {
         console.error('Error loading folder contents:', err);
@@ -121,18 +144,29 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
     } else {
       console.log('No files added.');
     }
-
-    // Once files are added, content is considered loaded
-    this.contentLoaded = true;
   }
 
   uploadFiles(files: File[]) {
     this.fileUploadService.uploadFiles(files).subscribe({
       next: (response) => {
         console.log('Upload successful:', response);
+        console.log('FileStructure: ', response.file_structure)
+        if (response && response.file_structure) {
+          // Use the folder structure returned from the backend
+          this.nodes = this.processFolders(response.file_structure, '');
+          
+          localStorage.setItem('folderStructure', JSON.stringify(this.nodes));  // Save folder structure to localStorage
+
+          this.loading = false; // Hide loading indicator
+          // Once files are added, content is considered loaded
+          this.contentLoaded = true;
+          console.log('Folder structure received from backend:', this.nodes);
+        }
       },
       error: (error) => {
         console.error('Upload failed:', error);
+        this.nodes = []; // Reset tree nodes on error
+        this.loading = false; // Hide loading indicator
       },
       complete: () => {
         console.log('File upload process completed.');

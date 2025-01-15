@@ -1,4 +1,4 @@
-import os
+'''import os
 import json
 from watchfiles import watch
 from threading import Thread
@@ -48,3 +48,4 @@ if __name__ == "__main__":
     while True:
         time.sleep(5)  # Do something else, but allow monitoring to run in the background
         print(monitor.get_file_structure())
+'''

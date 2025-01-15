@@ -1,16 +1,71 @@
 from watchfiles import watch
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from threading import Thread
 import zipfile
 import tarfile
+import time
+from urllib.parse import unquote
+from flask_cors import CORS
+
 
 app = Flask(__name__)
-
+CORS(app, origins="*")
 # Directory to monitor (this is the container's workspace)
 workspace_path = "/workspace"
 
-# Extracts the acrhive
+# === File Content Service ===
+def load_file_content(decoded_path):
+    """
+    Load the content of a file given its decoded path.
+    Args:
+        decoded_path (str): The file path to read.
+    Returns:
+        Response: JSON response with file content or error details.
+    """
+    try:
+        # Check if the file exists before reading
+        if not os.path.isfile(decoded_path):
+            print(f"File not found: {decoded_path}")  # Log when the file does not exist
+            return {"success": False, "error": "File not found"}, 404
+
+        with open(decoded_path, 'r') as file:
+            content = file.read()
+
+        return {"success": True, "content": content}, 200
+
+    except Exception as e:
+        print(f"Error reading file {decoded_path}: {str(e)}")  # Log any errors during file reading
+        return {"success": False, "error": str(e)}, 400
+
+
+@app.route('/api/getFile', methods=['GET'])
+def get_file_content():
+    """
+    Endpoint to return the content of a requested file.
+    Expects a 'path' parameter in the query string.
+    """
+    # Get the file path from the query string
+    file_path = request.args.get('path')
+
+    # Log the requested path
+    print(f"Requested file path (raw): {file_path}")
+
+    if file_path is None:
+        return jsonify({"success": False, "error": "File path not provided"}), 400
+
+    # Decode the path to handle special characters correctly
+    decoded_path = unquote(file_path)
+
+    # Log the decoded path
+    print(f"Decoded file path: {decoded_path}")
+
+    # Call the file content service
+    result, status_code = load_file_content(decoded_path)
+    return jsonify(result), status_code
+
+
+# === Directory Structure Service ===
 def extract_archive(file_path, extract_to):
     """Extracts an archive file to the specified directory."""
     try:
@@ -25,23 +80,36 @@ def extract_archive(file_path, extract_to):
     except Exception as e:
         raise RuntimeError(f"Failed to extract archive '{file_path}': {e}")
 
-# This function will return the directory structure as a dictionary
-def get_directory_structure(root_dir):
-    dir_structure = {}
-    for root, dirs, files in os.walk(root_dir):
-        root_dir_name = os.path.relpath(root, workspace_path)
-        dir_structure[root_dir_name] = {
-            "files": files,
-            "subdirs": {d: [] for d in dirs}
-        }
-    return dir_structure
+
+def get_directory_structure(directory):
+    """Recursively generate a dictionary-like structure of the directory."""
+    folder_structure = []
+
+    for entry in os.scandir(directory):
+        if entry.is_dir():
+            # Recursively process the subdirectory
+            folder_structure.append({
+                "name": entry.name,
+                "isFile": False,
+                "path": entry.path,
+                "children": get_directory_structure(entry.path)  # Recursive call
+            })
+        elif entry.is_file():
+            folder_structure.append({
+                "name": entry.name,
+                "isFile": True,
+                "path": entry.path
+            })
+
+    return folder_structure
+
 
 @app.route('/api/file-structure', methods=['GET'])
 def get_file_structure():
     """Endpoint to return the folder structure."""
     try:
         # Extract the uploaded archive (assume it's already in /workspace/archive.zip)
-        archive_path = os.path.join(workspace_path, "archive.zip")  # Change filename as needed
+        archive_path = os.path.join(workspace_path, "test.zip")  # Change filename as needed
         extract_archive(archive_path, workspace_path)
 
         # Generate the folder structure after extraction
@@ -50,6 +118,8 @@ def get_file_structure():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+# === Directory Monitoring ===
 def monitor_directory():
     """Monitor the directory and update structure when changes occur."""
     print(f"Monitoring {workspace_path}")
@@ -58,6 +128,7 @@ def monitor_directory():
             print(f"Change detected: {change}")
             # Optionally, update internal state, but for now we expose on-demand
             # Update the file structure or trigger any needed actions here.
+
 
 if __name__ == "__main__":
     # Start monitoring the directory in a separate thread

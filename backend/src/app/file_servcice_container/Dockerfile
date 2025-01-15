@@ -8,7 +8,7 @@ WORKDIR /workspace
 COPY container_monitor.py /app/
 
 # Install dependencies
-RUN pip install --no-cache-dir watchfiles flask requests
+RUN pip install --no-cache-dir watchfiles flask requests Flask-Cors
 
 # Run the monitor script on container start
 CMD ["python", "/app/container_monitor.py"]

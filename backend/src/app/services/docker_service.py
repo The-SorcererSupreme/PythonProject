@@ -73,7 +73,7 @@ class DockerService:
 
             # Upload file structure to the container
             self.upload_file_to_container(container_name, file_bytes, archive_name)
-
+            time.sleep(4)
             # Fetch the file structure from the container
             file_structure = self.get_file_structure_from_container(container_ip)
             print("File structure:", file_structure)

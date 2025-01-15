@@ -1,0 +1,40 @@
+<p>code-form works!</p>
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div *ngFor="let field of yamlStructure">
+      <div *ngIf="field.type === 'string'">
+        <label [for]="field.name">{{ field.name }}</label>
+        <input id="{{ field.name }}" formControlName="{{ field.name }}" type="text" />
+      </div>
+  
+      <div *ngIf="field.type === 'boolean'">
+        <label [for]="field.name">{{ field.name }}</label>
+        <input id="{{ field.name }}" formControlName="{{ field.name }}" type="checkbox" />
+      </div>
+  
+      <div *ngIf="field.type === 'integer'">
+        <label [for]="field.name">{{ field.name }}</label>
+        <input id="{{ field.name }}" formControlName="{{ field.name }}" type="number" />
+      </div>
+  
+      <div *ngIf="field.type === 'list'">
+        <label>{{ field.name }}</label>
+        <div formArrayName="{{ field.name }}">
+          <div *ngFor="let control of form.get(field.name)['controls']; let i = index">
+            <input [formControlName]="i" type="text" />
+            <button type="button" (click)="deleteFieldFromList(field.name, i)">Delete</button>
+          </div>
+        </div>
+        <button type="button" (click)="addFieldToList(field.name)">Add Field</button>
+      </div>
+  
+      <div *ngIf="field.type === 'object'">
+        <label>{{ field.name }}</label>
+        <div [formGroup]="form.get(field.name)">
+          <!-- Recursively render object fields here -->
+        </div>
+      </div>
+    </div>
+  
+    <button type="submit">Submit</button>
+  </form>
+  

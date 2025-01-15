@@ -1,14 +1,16 @@
 <div class="sidebar-container">
       <!-- Only show the p-tree when content is loaded -->
-      <p-tree *ngIf="contentLoaded" class="sidebar-tree"
+    <div *ngIf="contentLoaded">
+      <p-tree  class="sidebar-tree"
               [value]="nodes"
               selectionMode="single"
               [(selection)]="selectedNode"
               (onNodeSelect)="onNodeSelect($event)"
               loadingIcon="pi pi-spinner"
               [loading]="loading">
-      </p-tree>
-    
+            </p-tree>
+            <button (click)="clearFolderStructure()">Clear Sidebar</button>
+            </div>
       <!-- Show options to connect when no content is loaded -->
       <div *ngIf="!contentLoaded" class="drag-drop-area">
         <ngx-dropzone (change)="onDrop($event)" [multiple]="false" [accept]="'*, application/zip, application/x-zip-compressed'">

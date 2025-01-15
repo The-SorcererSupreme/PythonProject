@@ -11,20 +11,25 @@ def create_app():
     app = Flask(__name__)
     CORS(app, origins="*")
 
-    # You can now access environment variables like this:
+    # Fetch .env variables
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
     app.config['DEBUG'] = os.getenv('DEBUG')
     app.config['DB_PATH'] = os.getenv('DB_PATH')
-    # Configure app settings (e.g., app.config.from_object())
+
+    # Configure app settings (e.g., app.config.from_object()) here
+    #
     
     # Register blueprints
     from app.routes.auth_routes import auth_bp
     app.register_blueprint(auth_bp)
     from app.routes.fileupload_routes import upload_file
     app.register_blueprint(upload_file)
-    #from app.routes.docker_routes import docker_bp
-    #app.register_blueprint(docker_bp)
+    #from app.routes.loadfile_routes import load_file
+    #app.register_blueprint(load_file)
+    from app.routes.container_proxy import container_proxy
+    app.register_blueprint(container_proxy)
     
-    # Add other routes, services, etc.
+    # Add more routes, services, etc. here
+    #
 
     return app
