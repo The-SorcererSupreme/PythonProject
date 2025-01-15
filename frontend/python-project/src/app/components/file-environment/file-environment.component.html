@@ -16,6 +16,7 @@
           <div *ngIf="files.length" class="file-list">
             <div *ngFor="let file of files">{{ file.name }}</div>
           </div>
+          <input type="hidden" name="upload_type" value="drag_and_drop" />
         </ngx-dropzone>
         <button (click)="connectToGit()">Connect to Git</button>
         <button (click)="connectViaAgent()">Connect via Agent</button>

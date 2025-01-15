@@ -12,9 +12,10 @@ export class FileUploadService {
 
   constructor(private http: HttpClient) {}
 
-  uploadFiles(files: File[]): Observable<any> {
+  uploadFiles(files: File[], uploadType: string = 'drag_and_drop'): Observable<any> {
     const formData = new FormData();
     files.forEach(file => formData.append('file', file, file.name));
+    formData.append('upload_type', uploadType); // Add upload-type for use in fileupload_routes.py
 
     return this.http.post(this.apiUrl, formData);
   }

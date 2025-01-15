@@ -22,6 +22,9 @@ def create_app():
     app.register_blueprint(auth_bp)
     from app.routes.fileupload_routes import upload_file
     app.register_blueprint(upload_file)
+    #from app.routes.docker_routes import docker_bp
+    #app.register_blueprint(docker_bp)
+    
     # Add other routes, services, etc.
 
     return app
