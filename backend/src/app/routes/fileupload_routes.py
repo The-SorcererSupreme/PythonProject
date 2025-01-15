@@ -1,7 +1,7 @@
-# /app/routes/file_upload.routes.py
+# /PythonProject/backend/src/app/routes/fileupload_routes.py
 
 from flask import Blueprint, request, jsonify
-from app.services.fileupload_service import FileUploadService
+#from app.services.fileupload_service import FileUploadService
 from app.services.docker_service import DockerService
 
 # Define the blueprint
@@ -15,28 +15,24 @@ def upload_file_route():
         return jsonify({'error': 'No file part'}), 400
     
     file = request.files['file']
-    #upload_type = request.form.get('upload_type', 'drag_and_drop')  # Default to drag-and-drop upload
-    upload_type = 'drag_and_drop'
+    upload_type = 'drag_and_drop' # !!! NEEDS TO BE FETCHED FROM THE REQUEST
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
-    
-    # Process the file (e.g., save it, validate it, etc.)
-    file_upload_service = FileUploadService()
-    file_path = file_upload_service.save_uploaded_file(file)
-    archive_name = file.filename
-    print("Path: ", file_path, "File: ", archive_name)
 
-    # Here you can add any Docker logic or further processing
-    # For example, calling the Docker container service to process the file
+    # Handle upload type
     if upload_type == 'drag_and_drop':
         print("Checking upload type")
         try:
             print("Launching Docker Service")
+            archive_name = file.filename
+            file_bytes = file.read() # Read file into memory 
             docker_service = DockerService()
-            container_response = docker_service.process_file_in_container(file_path, archive_name)
+            container_response = docker_service.process_file_in_container(file_bytes, archive_name)
             return jsonify({
                 'message': 'File uploaded and processed successfully',
-                'container_id': container_response['container_id']
+                'container_id': container_response['container_id'],
+                'container_status': container_response['status'],
+                'file_structure': container_response['file_structure']
             }), 200
         except Exception as e:
             return jsonify({'error': f'Failed to process file in Docker container: {e}'}), 500

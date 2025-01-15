@@ -1,5 +1,5 @@
-# /app/services/file-upload.service.py
-
+# /PythonProject/backend/src/app/services/fileupload_service.py
+'''
 import os
 import zipfile
 from flask import current_app
@@ -25,3 +25,4 @@ class FileUploadService:
                 zip_ref.extractall(os.path.join(upload_folder, filename[:-4]))
         
         return filepath
+'''

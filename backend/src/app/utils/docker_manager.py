@@ -40,7 +40,7 @@ class DockerContainerManager:
         self.client = docker_client_manager.client
 
 
-    def create_container(self, image_name, container_name, ports=None, volumes=None, environment=None, command=None):
+    def create_container(self, image_name, container_name, ports, volumes=None, environment=None, command=None):
         """
         Creates a Docker container.
         - image_name: The Docker image to use.
@@ -71,6 +71,13 @@ class DockerContainerManager:
         """
         try:
             container.start()
-            return f"Container '{container.name}' started successfully."
+            print(f"Container '{container.name}' started successfully.")
+            # Retrieve the container's IP address
+            container.reload()  # Refresh container state
+            network_settings = container.attrs['NetworkSettings']
+            container_ip = network_settings['IPAddress']
+
+            return container_ip  # Return the container's IP address
+            
         except Exception as e:
             raise RuntimeError(f"Error starting container '{container.name}': {e}")

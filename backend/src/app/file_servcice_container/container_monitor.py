@@ -2,11 +2,28 @@ from watchfiles import watch
 import os
 from flask import Flask, jsonify
 from threading import Thread
+import zipfile
+import tarfile
 
 app = Flask(__name__)
 
 # Directory to monitor (this is the container's workspace)
 workspace_path = "/workspace"
+
+# Extracts the acrhive
+def extract_archive(file_path, extract_to):
+    """Extracts an archive file to the specified directory."""
+    try:
+        if file_path.endswith(".zip"):
+            with zipfile.ZipFile(file_path, "r") as zip_ref:
+                zip_ref.extractall(extract_to)
+        elif file_path.endswith((".tar.gz", ".tgz", ".tar")):
+            with tarfile.open(file_path, "r:*") as tar_ref:
+                tar_ref.extractall(extract_to)
+        else:
+            raise ValueError(f"Unsupported archive format: {file_path}")
+    except Exception as e:
+        raise RuntimeError(f"Failed to extract archive '{file_path}': {e}")
 
 # This function will return the directory structure as a dictionary
 def get_directory_structure(root_dir):
@@ -21,8 +38,17 @@ def get_directory_structure(root_dir):
 
 @app.route('/api/file-structure', methods=['GET'])
 def get_file_structure():
-    """Expose the current file structure as a JSON response."""
-    return jsonify(get_directory_structure(workspace_path))
+    """Endpoint to return the folder structure."""
+    try:
+        # Extract the uploaded archive (assume it's already in /workspace/archive.zip)
+        archive_path = os.path.join(workspace_path, "archive.zip")  # Change filename as needed
+        extract_archive(archive_path, workspace_path)
+
+        # Generate the folder structure after extraction
+        folder_structure = get_directory_structure(workspace_path)
+        return jsonify(folder_structure), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 def monitor_directory():
     """Monitor the directory and update structure when changes occur."""
@@ -39,4 +65,4 @@ if __name__ == "__main__":
     monitor_thread.start()
 
     # Start Flask app
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=6000)
