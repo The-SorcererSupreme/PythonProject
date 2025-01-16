@@ -14,6 +14,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S %z'
 )
 
+ALLOWED_FILE_EXTENSIONS = ['.yml', '.yaml']
 # Configuration: Update container host and port as needed
 CONTAINER_HOST = "http://172.17.0.2"  # Replace with container's hostname/IP
 CONTAINER_PORT = 6000               # Port exposed by the container
@@ -54,9 +55,12 @@ def forward_request_to_container(endpoint, path):
             json_content = container_response.read()
             content_data = json.loads(json_content)
             logging.info(f"{method} - Container responded with: {content_data}")
-            container_response = convert_yaml_to_json_array(content_data, path)
-            logging.info(f"{method} - Generated json: {container_response}")
-            return jsonify({"content": container_response}, container_status)
+            if is_allowed_file_extension(path):
+                container_response = convert_yaml_to_json_array(content_data, path)
+                logging.info(f"{method} - Generated json: {container_response}")
+                return container_response, {'success' : True}
+            else:
+                return content_data, {'success' : True}
         elif request.method == "POST":
             method = "POST"
             # Forward POST request with JSON data
@@ -93,6 +97,11 @@ def is_container_route(route):
     return any(route.startswith(container_route) for container_route in CONTAINER_ROUTES)
 
 
+def is_allowed_file_extension(file_path):
+    """
+    Checks if the file path has an allowed extension.
+    """
+    return any(file_path.endswith(ext) for ext in ALLOWED_FILE_EXTENSIONS)
 
 # Handle GET requests to /api/file-structure and /api/getFile, which should be forwarded to the container
 @container_proxy.route('/api/file-structure', methods=['GET'])

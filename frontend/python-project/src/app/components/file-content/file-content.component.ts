@@ -34,7 +34,7 @@ export class FileContentComponent {
     this.errorMessage = null; // Reset error message before fetching
     this.folderService.fetchFileContent(path).subscribe({
       next: (response: any) => {
-        if (response.content) {
+        if (response.success) {
           this.fileContent = response.content;
           console.log('Successfully fetched file content:', this.fileContent);
           this.cdr.markForCheck(); // Trigger Change Detection

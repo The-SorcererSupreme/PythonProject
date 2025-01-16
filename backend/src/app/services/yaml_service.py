@@ -74,7 +74,7 @@ def convert_yaml_to_json_array(data, path):
             # Process each item in the parsed YAML dictionary
             for key, value in yaml_dict.items():
                 json_array.append(process_element(key, value))
-            
+            json_array.append({'success' : 'true'})
             logging.info('Reading json string...')
             json_string = json.dumps(json_array)
             return json_string
