@@ -1,28 +1,18 @@
-import os
-from flask import jsonify
+# routes/loadfile_routes.py
 
+from flask import Blueprint, request, jsonify
+from services.yaml_service import parse_yaml
 
-def loadfile_service(decoded_path):
-    """
-    Load the content of a file given its decoded path.
+loadfile_bp = Blueprint('loadfile', __name__)
 
-    Args:
-        decoded_path (str): The file path to read.
-
-    Returns:
-        Response: JSON response with file content or error details.
-    """
+@loadfile_bp.route('/api/loadyaml', methods=['POST'])
+def load_yaml():
+    file_content = request.data.decode('utf-8')
+    
     try:
-        # Check if the file exists before reading
-        if not os.path.isfile(decoded_path):
-            print(f"File not found: {decoded_path}")  # Log when the file does not exist
-            return jsonify({"success": False, "error": "File not found"}), 404
-
-        with open(decoded_path, 'r') as file:
-            content = file.read()
-
-        return jsonify({"success": True, "content": content})
-
-    except Exception as e:
-        print(f"Error reading file {decoded_path}: {str(e)}")  # Log any errors during file reading
-        return jsonify({"success": False, "error": str(e)}), 400
+        yaml_structure = parse_yaml(file_content)
+        # Here, you could generate form inputs dynamically based on the YAML structure.
+        # For simplicity, returning the parsed structure.
+        return jsonify(yaml_structure)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400

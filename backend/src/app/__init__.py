@@ -1,7 +1,7 @@
 # backend/src/app/__init__.py
 from flask_cors import CORS
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, request, jsonify
 import os
 
 # Load environment variables from .env file
@@ -16,20 +16,21 @@ def create_app():
     app.config['DEBUG'] = os.getenv('DEBUG')
     app.config['DB_PATH'] = os.getenv('DB_PATH')
 
-    # Configure app settings (e.g., app.config.from_object()) here
-    #
-    
+    # Add middleware to handle dynamic routing
+    from app.utils.request_router import RequestRoutingMiddleware
+    app.wsgi_app = RequestRoutingMiddleware(app.wsgi_app)
+
     # Register blueprints
     from app.routes.auth_routes import auth_bp
     app.register_blueprint(auth_bp)
+
     from app.routes.fileupload_routes import upload_file
     app.register_blueprint(upload_file)
-    #from app.routes.loadfile_routes import load_file
-    #app.register_blueprint(load_file)
+
+    from app.routes.dynamic_router import dynamic_router
+    app.register_blueprint(dynamic_router)
+
     from app.routes.container_proxy import container_proxy
     app.register_blueprint(container_proxy)
-    
-    # Add more routes, services, etc. here
-    #
 
     return app
