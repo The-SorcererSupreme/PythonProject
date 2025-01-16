@@ -41,7 +41,7 @@ def get_file_structure():
     """Endpoint to return the folder structure."""
     try:
         # Extract the uploaded archive (assume it's already in /workspace/archive.zip)
-        archive_path = os.path.join(workspace_path, "archive.zip")  # Change filename as needed
+        archive_path = os.path.join(workspace_path, "test.zip")  # Change filename as needed
         extract_archive(archive_path, workspace_path)
 
         # Generate the folder structure after extraction
