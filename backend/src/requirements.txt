@@ -7,10 +7,12 @@ docker==7.1.0
 exceptiongroup==1.2.2
 Flask==3.1.0
 Flask-Cors==5.0.0
+gunicorn==23.0.0
 idna==3.10
 itsdangerous==2.2.0
 Jinja2==3.1.5
 MarkupSafe==3.0.2
+packaging==24.2
 python-dotenv==1.0.1
 PyYAML==6.0.2
 requests==2.32.3

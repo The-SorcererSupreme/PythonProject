@@ -6,18 +6,20 @@ from app.routes.container_proxy import forward_request_to_container  # Import th
 
 dynamic_router = Blueprint("dynamic_router", __name__)
 
-print('inside dynamic router')
+#print('inside dynamic router')
 @dynamic_router.route('/api/getFile', methods=['GET'])
 def handle_get_file():
     print('inside dynamic router')
     """
     Handles requests to fetch a file dynamically from any source.
     """
+    endpoint = request.path
     file_path = request.args.get("path")  # File path as a query parameter
+
     print(f"File path received: {file_path}")
     
     # Check for the source, defaulting to 'container'
-    source_type = request.args.get("source", "container")  # Dynamically set the source
+    source_type = "container"  # Dynamically set the source
     
     if not file_path:
         # If no file path is provided, return error
@@ -27,8 +29,8 @@ def handle_get_file():
         # Route the request based on the source type
         if source_type == "container":
             # Forward the request to the container_proxy if source is 'container'
-            print("Routing to container")
-            return forward_request_to_container(file_path)  # Call the function to forward to container
+            print("Routing to container with: ", file_path)
+            return forward_request_to_container(endpoint, file_path)  # Call the function to forward to container
         
         elif source_type == "git":
             # Dummy logic for git source

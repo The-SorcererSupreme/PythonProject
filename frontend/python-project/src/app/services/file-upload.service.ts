@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 })
 export class FileUploadService {
 
-  private apiUrl = 'http://127.0.0.1:5000/api/upload';  // The URL where we will send the file to upload
+  private apiUrl = 'http://127.0.0.1:8000/api/upload';  // The URL where we will send the file to upload
 
   constructor(private http: HttpClient) {}
 

@@ -7,7 +7,7 @@ import { switchMap } from 'rxjs/operators';
   providedIn: 'root', // Automatically makes it available across the app
 })
 export class FolderService {
-  private baseUrl = 'http://localhost:5000/api'; // Base URL for API
+  private baseUrl = 'http://localhost:8000/api'; // Base URL for API
 
   constructor(private http: HttpClient,) {}
 

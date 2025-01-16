@@ -17,6 +17,7 @@ CONTAINER_ROUTES = ['/api/file-structure', '/api/getFile']
 container_proxy = Blueprint("container_proxy", __name__)
 
 def forward_request_to_container(endpoint, path):
+    print(f"forward_request_to_container triggered with: {endpoint}, {path}")
     """
     Forward a request to the container's API, appending the file path in the query string.
     Args:
@@ -28,20 +29,24 @@ def forward_request_to_container(endpoint, path):
     # Use urlencode to safely encode the path for the query string
     query_string = urlencode({'path': path})
     url = f"{CONTAINER_BASE_URL}{endpoint}?{query_string}"  # Pass the path in the query string
-    print('Forwarding request')
+    print(f"Forwarding request from container_proxy with path: ", url)
     
     # Handle the request based on its method
     try:
         if request.method == "GET":
+            method = "GET"
             # Forward GET request with query parameters
             container_response = requests.get(url)
         elif request.method == "POST":
+            method = "POST"
             # Forward POST request with JSON data
             container_response = requests.post(url, json=request.json)
         elif request.method == "PUT":
+            method = "PUT"
             # Forward PUT request with JSON data
             container_response = requests.put(url, json=request.json)
         elif request.method == "DELETE":
+            method = "DELETE"
             # Forward DELETE request
             container_response = requests.delete(url)
         else:
@@ -49,6 +54,8 @@ def forward_request_to_container(endpoint, path):
             return jsonify({"error": f"Unsupported method: {request.method}"}), 405
 
         # Return the container's response
+        print('Container response header: ', container_response.headers)
+        print(method, " - Container responded with: ", container_response.json())
         return jsonify(container_response.json()), container_response.status_code
 
     except requests.exceptions.RequestException as e:
@@ -80,9 +87,10 @@ def proxy_file_structure():
             return jsonify({"error": "File path is required"}), 400
     else:
         return jsonify({"error": "Invalid request path for container"}), 400
-'''
+
 @container_proxy.route('/api/getFile', methods=['GET'])
 def proxy_get_file():
+    print("Routing Match from container_proxy: /api/getFile")
     if is_container_route(request.path):
         # Get the file path from the request and forward it to the container
         file_path = request.args.get("path")  # Extract the path from the query parameters
@@ -93,4 +101,3 @@ def proxy_get_file():
             return jsonify({"error": "File path is required"}), 400
     else:
         return jsonify({"error": "Invalid request path for container"}), 400
-'''

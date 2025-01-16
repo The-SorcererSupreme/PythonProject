@@ -1,7 +1,7 @@
 # backend/src/app/__init__.py
 from flask_cors import CORS
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, url_for
 import os
 
 # Load environment variables from .env file
@@ -32,5 +32,5 @@ def create_app():
 
     from app.routes.container_proxy import container_proxy
     app.register_blueprint(container_proxy)
-
     return app
+
