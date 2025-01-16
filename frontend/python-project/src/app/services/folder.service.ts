@@ -22,6 +22,7 @@ export class FolderService {
   fetchFileContent(path: string): Observable<any> {
     const url = `${this.baseUrl}/getFile?path=${encodeURIComponent(path)}`;
     console.log('Requesting file content URL:', url);  // Debug log for the file content request
-    return timer(300).pipe(switchMap(() => this.http.get(url)));
+    return this.http.get(url);
+
   }
 }

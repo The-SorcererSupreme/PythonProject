@@ -1,6 +1,18 @@
 import requests
 from flask import Blueprint, request, jsonify
 from urllib.parse import urlencode
+from app.services.yaml_service import convert_yaml_to_json_array
+import logging
+from pprint import pformat
+import json
+from urllib.request import urlopen
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [%(module)s] [%(levelname)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S %z'
+)
 
 # Configuration: Update container host and port as needed
 CONTAINER_HOST = "http://172.17.0.2"  # Replace with container's hostname/IP
@@ -36,7 +48,15 @@ def forward_request_to_container(endpoint, path):
         if request.method == "GET":
             method = "GET"
             # Forward GET request with query parameters
-            container_response = requests.get(url)
+            container_response = urlopen(url)
+            container_status = container_response.getcode()
+            logging.info(f"{method} - Container status code: {container_status}")
+            json_content = container_response.read()
+            content_data = json.loads(json_content)
+            logging.info(f"{method} - Container responded with: {content_data}")
+            container_response = convert_yaml_to_json_array(content_data, path)
+            logging.info(f"{method} - Generated json: {container_response}")
+            return jsonify({"content": container_response}, container_status)
         elif request.method == "POST":
             method = "POST"
             # Forward POST request with JSON data
@@ -54,8 +74,7 @@ def forward_request_to_container(endpoint, path):
             return jsonify({"error": f"Unsupported method: {request.method}"}), 405
 
         # Return the container's response
-        print('Container response header: ', container_response.headers)
-        print(method, " - Container responded with: ", container_response.json())
+        logging.info(f"Form generator provided: {container_response}")
         return jsonify(container_response.json()), container_response.status_code
 
     except requests.exceptions.RequestException as e:
@@ -74,6 +93,7 @@ def is_container_route(route):
     return any(route.startswith(container_route) for container_route in CONTAINER_ROUTES)
 
 
+
 # Handle GET requests to /api/file-structure and /api/getFile, which should be forwarded to the container
 @container_proxy.route('/api/file-structure', methods=['GET'])
 def proxy_file_structure():
@@ -83,20 +103,6 @@ def proxy_file_structure():
         if file_path:
             # Forward the file path correctly with the query string
             return forward_request_to_container('/api/file-structure', file_path)
-        else:
-            return jsonify({"error": "File path is required"}), 400
-    else:
-        return jsonify({"error": "Invalid request path for container"}), 400
-
-@container_proxy.route('/api/getFile', methods=['GET'])
-def proxy_get_file():
-    print("Routing Match from container_proxy: /api/getFile")
-    if is_container_route(request.path):
-        # Get the file path from the request and forward it to the container
-        file_path = request.args.get("path")  # Extract the path from the query parameters
-        if file_path:
-            # Forward the file path correctly with the query string
-            return forward_request_to_container('/api/getFile', file_path)
         else:
             return jsonify({"error": "File path is required"}), 400
     else:

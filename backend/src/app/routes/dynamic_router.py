@@ -1,7 +1,4 @@
 from flask import Blueprint, request, jsonify, redirect, url_for
-from app.utils.request_router import RequestRoutingMiddleware
-from app.services.yaml_service import parse_yaml, analyze_yaml
-import requests
 from app.routes.container_proxy import forward_request_to_container  # Import the forward_request_to_container function
 
 dynamic_router = Blueprint("dynamic_router", __name__)
@@ -72,15 +69,15 @@ def process_file(file_path, source_type):
     # Check if file is YAML
     if file_path.endswith(('.yaml', '.yml')):
         print("It is YAML data")
-        # Parse the YAML file content
-        yaml_data = parse_yaml(file_path)
 
-        if "error" in yaml_data:
+        # Parse the YAML file content
+        #yaml_data = parse_yaml(file_path)
+        #if "error" in yaml_data:
             # Return error if YAML parsing fails
-            return {"data": yaml_data, "status": 400}  # Error during YAML parsing
+        #    return {"data": yaml_data, "status": 400}  # Error during YAML parsing
 
         # Analyze YAML and generate the form structure
-        form_structure = analyze_yaml(yaml_data)
+        form_structure = analyze_yaml(file_path)
         
         # Modify form structure based on source type
         form_structure = modify_form_structure_for_source(form_structure, source_type)

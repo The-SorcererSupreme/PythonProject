@@ -1,15 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-dynamic-yaml-form',
-  imports: [],
-  templateUrl: './dynamic-yaml-form.component.html',
-  styleUrls: ['./dynamic-yaml-form.component.css']
+  selector: 'code-form-component',
+  standalone: true,
+  imports: [
+    CommonModule,
+  ],
+  templateUrl: './code-form.component.html',
+  styleUrls: ['./code-form.component.css']
 })
 export class DynamicYamlFormComponent {
   form: FormGroup;
-  yamlStructure: any; // This will hold the structure from the backend
+  @Input() yamlStructure: any = []; // Receive JSON from the child component
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({});
@@ -17,19 +21,20 @@ export class DynamicYamlFormComponent {
 
   // This method will be triggered after the YAML file is parsed by the backend
   createFormFromYamlStructure(yamlStructure: any) {
-    // Recursively build the form from the YAML structure
     const formGroup = this.fb.group({});
     yamlStructure.forEach((field: any) => {
-      if (field.type === 'string') {
+      if (field.type === 'str') {  // Adjusted for the correct type
         formGroup.addControl(field.name, this.fb.control(field.value || '', Validators.required));
-      } else if (field.type === 'boolean') {
-        formGroup.addControl(field.name, this.fb.control(field.value || false));
-      } else if (field.type === 'integer') {
+      } else if (field.type === 'int') {
         formGroup.addControl(field.name, this.fb.control(field.value || 0, Validators.min(0)));
       } else if (field.type === 'list') {
-        // For lists, we add an array of form controls (dynamic fields)
-        formGroup.addControl(field.name, this.fb.array(field.value ? field.value.map((v: any) => this.fb.control(v)) : []));
-      } else if (field.type === 'object') {
+        // Handle list (array)
+        const formArray = this.fb.array(
+          field.value.map((v: any) => this.fb.control(v))
+        );
+        formGroup.addControl(field.name, formArray);
+      } else if (field.type === 'dict') {
+        // Handle nested objects
         formGroup.addControl(field.name, this.createFormFromYamlStructure(field.fields));
       }
     });
