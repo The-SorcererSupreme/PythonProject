@@ -16,7 +16,7 @@ import { NgIf } from '@angular/common';
 //import { CodeEditorComponent, CodeModel } from '@ngstack/code-editor';
 import { FileEnvironmentComponent } from './components/file-environment/file-environment.component';
 import { FileContentComponent } from './components/file-content/file-content.component';
-import { DynamicYamlFormComponent} from './code-form/code-form.component'
+import { DynamicYamlFormComponent} from './components/code-form/code-form.component'
 @Component({
     selector: 'app-root',
     standalone: true,

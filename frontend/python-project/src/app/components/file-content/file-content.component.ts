@@ -2,7 +2,7 @@ import { Component, ChangeDetectorRef, OnChanges, SimpleChanges, Input, Output, 
 import { FolderService } from '../../services/folder.service';
 import { NgIf } from '@angular/common';
 import { NgxDropzoneModule } from 'ngx-dropzone';
-import { DynamicYamlFormComponent } from '../../code-form/code-form.component';
+import { DynamicYamlFormComponent } from '../code-form/code-form.component';
 
 @Component({
   selector: 'app-file-content',
