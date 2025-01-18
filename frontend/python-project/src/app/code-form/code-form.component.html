@@ -1,28 +1,43 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
-  <div *ngFor="let field of yamlStructure">
-    <div *ngIf="field.type === 'str'">
-      <label>{{ field.name }}</label>
-      <input formControlName="{{ field.name }}" type="text" />
+<div *ngFor="let item of yamlStructure">
+    <!-- Render comments -->
+    <div *ngIf="item.type === 'comment'" class="comment">
+      # {{ item.value }}
     </div>
-    <div *ngIf="field.type === 'int'">
-      <label>{{ field.name }}</label>
-      <input formControlName="{{ field.name }}" type="number" />
-    </div>
-    <div *ngIf="field.type === 'boolean'">
-      <label>{{ field.name }}</label>
-      <input formControlName="{{ field.name }}" type="checkbox" />
-    </div>
-    <div *ngIf="field.type === 'list'">
-      <div *ngFor="let item of form.get(field.name)?.value">
-        <input formControlName="{{ item }}" />
+  
+    <!-- Render inputs for editable fields -->
+    <div *ngIf="item.type !== 'comment'">
+      <label [for]="item.name"><strong>{{ item.name }}</strong>:</label>
+      
+      <!-- Text input -->
+      <input
+        *ngIf="item.type === 'str'"
+        [id]="item.name"
+        [(ngModel)]="item.value"
+        type="text"
+      />
+  
+      <!-- Number input -->
+      <input
+        *ngIf="item.type === 'int'"
+        [id]="item.name"
+        [(ngModel)]="item.value"
+        type="number"
+      />
+  
+      <!-- List input -->
+      <div *ngIf="item.type === 'list'">
+        <label>List:</label>
+        <div *ngFor="let subItem of item.fields; let i = index">
+          <input [(ngModel)]="subItem.value" type="text" />
+          <button (click)="deleteFieldFromList(item.name, i)">Remove</button>
+        </div>
+        <button (click)="addFieldToList(item.name)">Add Field</button>
       </div>
-    </div>
-    <div *ngIf="field.type === 'dict'">
-      <div *ngFor="let subField of field.fields">
-        <label>{{ subField.name }}</label>
-        <input formControlName="{{ subField.name }}" />
+  
+      <!-- Nested dictionary -->
+      <div *ngIf="item.type === 'dict'">
+        <code-form-component [yamlStructure]="item.fields"></code-form-component>
       </div>
     </div>
   </div>
-  <button type="submit">Submit</button>
-</form>
+  

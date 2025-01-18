@@ -58,7 +58,7 @@ def forward_request_to_container(endpoint, path):
             if is_allowed_file_extension(path):
                 container_response = convert_yaml_to_json_array(content_data, path)
                 logging.info(f"{method} - Generated json: {container_response}")
-                return container_response, {'success' : True}
+                return container_response
             else:
                 return content_data, {'success' : True}
         elif request.method == "POST":

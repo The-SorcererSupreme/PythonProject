@@ -2,6 +2,7 @@ import { Component, ChangeDetectorRef, OnChanges, SimpleChanges, Input, Output, 
 import { FolderService } from '../../services/folder.service';
 import { NgIf } from '@angular/common';
 import { NgxDropzoneModule } from 'ngx-dropzone';
+import { DynamicYamlFormComponent } from '../../code-form/code-form.component';
 
 @Component({
   selector: 'app-file-content',
@@ -9,11 +10,13 @@ import { NgxDropzoneModule } from 'ngx-dropzone';
   imports: [
     NgIf,
     NgxDropzoneModule,
+    DynamicYamlFormComponent,
   ],
   templateUrl: './file-content.component.html',
   styleUrls: ['./file-content.component.css'],
 })
 export class FileContentComponent {
+  yamlData: any = []; // Data passed to the child component
   @Input() filePath: string | null = null; // Accept filePath as input
   @Output() fileContentChange = new EventEmitter<any>(); // Output to emit the file content
   loading: boolean = false;
@@ -32,17 +35,30 @@ export class FileContentComponent {
   fetchFileContent(path: string): void {
     this.loading = true;
     this.errorMessage = null; // Reset error message before fetching
+
+    // Clear previous data
+    this.fileContent = null;
+    this.yamlData = null;
+  
     this.folderService.fetchFileContent(path).subscribe({
       next: (response: any) => {
+        // Check if the response has a "data" field (for YAML files)
         if (response.success) {
-          this.fileContent = response.content;
-          console.log('Successfully fetched file content:', this.fileContent);
-          this.cdr.markForCheck(); // Trigger Change Detection
+          if (response.data) {
+            // Handle YAML structure (JSON array)
+            this.yamlData = response.data;
+            console.log('YAML Data:', this.yamlData);
+          } else if (typeof response.content === 'string') {
+            // Handle plain file content
+            this.fileContent = response.content;
+            console.log('File Content:', this.fileContent);
+          }
         } else {
-          console.error('Failed to fetch file content (API error):', response.error);
+          console.error('API error:', response.error);
           this.errorMessage = 'Failed to fetch file content: ' + response.error;
         }
         this.loading = false;
+        this.cdr.markForCheck(); // Trigger Change Detection
       },
       error: (err) => {
         console.error('Error fetching file content (HTTP error):', err);
@@ -51,4 +67,5 @@ export class FileContentComponent {
       },
     });
   }
+  
 }
