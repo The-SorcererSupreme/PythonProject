@@ -37,9 +37,9 @@ class RequestRoutingMiddleware:
 
         # Dynamic routing for other sources
         if any(request_path.startswith(route) for route in self.dynamic_routes):
+            # Let Flask handle the request through `dynamic_router` blueprint
             print("Switching to dynamic routing with: ", request_path)
             print('In environ: ', environ)
-            # Let Flask handle the request through `dynamic_router` blueprint
             return self.app(environ, start_response)
 
         # Fallback for unsupported routes
