@@ -16,6 +16,18 @@ npm install
 #cd ~/PythonProject/frontend/python-project/
 #ng serve
 
+# Step 5: Set up Python environment
+echo "Setting up Python environment..."
+sudo apt-get install -y python3 python3-pip python3-venv
+cd ~/PythonProject/backend/src/
+if [ ! -d "venv" ]; then
+  python3.10 -m venv venv || error_exit "Failed to create Python virtual environment."
+#  source ../venv/bin/activate || error_exit "Failed to activate venv."
+#  pip install --upgrade pip || error_exit "Failed to upgrade pip."
+  pip install -r requirements.txt || error_exit "Failed to install Python dependencies."
+else
+  echo "Python environment already set up, skipping..."
+
 # Step 2: Install Docker
 if ! command -v docker &> /dev/null; then
   echo "Installing Docker..."
@@ -56,18 +68,6 @@ else
 fi
 
 
-
-# Step 5: Set up Python environment
-echo "Setting up Python environment..."
-sudo apt-get install -y python3 python3-pip python3-venv
-cd ~/PythonProject/backend/src/
-if [ ! -d "venv" ]; then
-  python3.10 -m venv venv || error_exit "Failed to create Python virtual environment."
-  source ../venv/bin/activate || error_exit "Failed to activate venv."
-  pip install --upgrade pip || error_exit "Failed to upgrade pip."
-  pip install -r requirements.txt || error_exit "Failed to install Python dependencies."
-else
-  echo "Python environment already set up, skipping..."
 fi
 
 
