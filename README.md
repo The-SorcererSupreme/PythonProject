@@ -1,6 +1,6 @@
 # YAML File Editor & Viewer
 
-Please Referr to:
+=======
 This project is a web-based application designed for dynamically loading and editing YAML files. It allows users to upload YAML files, view their contents as a form, and modify the values interactively. It also supports displaying non-YAML files as plain text.
 
 ---
@@ -223,5 +223,3 @@ Fetches the content of the specified file.
 - YAML files with invalid syntax may cause parsing errors.
 - Dynamic form rendering may not fully support deeply nested structures.
 - Styling for the generated forms can be improved.
-
----
