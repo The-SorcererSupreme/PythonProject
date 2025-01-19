@@ -2,7 +2,7 @@
 #/frontend/python-project/.angular
 #/frontend/python-project/.vscode
 #/frontend/python-project/node_modules
-#/frontend/python-project/.editorconfig
+#/frontend/python-project/
 #/frontend/python-project/angular.json
 #/frontend/python-project/server.ts
 #/frontend/python-project/tsconfig.app.json
@@ -15,16 +15,16 @@
 
 # Ignore Python virtual environment
 /backend/src/uploads/*
-venv/*
 *.pyc
 __pycache__/
 *.pyo
 
+*.env
 # Ignore backend build artifacts
 backend/__pycache__/
 backend/*.pyc
 backend/src/app/__pycache__/
-backend/venv/*
+backend/venv*
 
 # Ignore node_modules in frontend
 frontend/python-project/node_modules/
@@ -44,6 +44,7 @@ out/
 .vscode/
 .idea/
 *.iml
+*/.editorconfig
 
 # Ignore system files
 .DS_Store

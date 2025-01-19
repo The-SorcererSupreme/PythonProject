@@ -1,5 +1,6 @@
 #!/bin/bash
 sudo apt-get update -y
+sudo apt install npm -y
 sudo apt-get upgrade -y
 cd ~
 
@@ -9,7 +10,7 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 source ~/.bashrc
 #nvm list-remote
 nvm install v22.13.0
-#npm install -g @angular/cli
+npm install -g @angular/cli
 npm install -g npm@11.0.0
 cd ~/PythonProject/frontend/python-project/
 npm install
@@ -18,10 +19,10 @@ npm install
 
 # Step 5: Set up Python environment
 echo "Setting up Python environment..."
-sudo apt-get install -y python3 python3-pip python3-venv
+sudo apt install -y python3 python3-pip python3.12-venv
 cd ~/PythonProject/backend/src/
 if [ ! -d "venv" ]; then
-  python3.10 -m venv venv || error_exit "Failed to create Python virtual environment."
+  python3 -m venv venv || error_exit "Failed to create Python virtual environment."
 #  source ../venv/bin/activate || error_exit "Failed to activate venv."
 #  pip install --upgrade pip || error_exit "Failed to upgrade pip."
   pip install -r requirements.txt || error_exit "Failed to install Python dependencies."
@@ -56,18 +57,9 @@ if ! groups $USER | grep -q docker; then
   sudo usermod -aG docker $USER || error_exit "Failed to add user to Docker group."
   sudo systemctl enable docker.service || error_exit "Failed to enable Docker service."
   sudo systemctl enable containerd.service || error_exit "Failed to enable containerd service."
-
-  echo "Reloading group membership..."
-  newgrp docker <<EOF
-  echo "Docker group reloaded successfully."
-  exec bash setup.sh # Automatically resumes the script in the new group
-EOF
   exit 0
 else
   echo "Docker already configured, skipping..."
-fi
-
-
 fi
 
 
