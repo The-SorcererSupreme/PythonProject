@@ -1,12 +1,12 @@
 // /frontend/python-project/src/app/components/file-environment/file-environment.component.ts
-import { Component,OnInit,EventEmitter,Output } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Inject, PLATFORM_ID } from '@angular/core';
 import { FolderService } from '../../services/folder.service';
 import { TreeModule } from 'primeng/tree';
 import { HttpClient } from '@angular/common/http';
 import { FileContentComponent } from '../../components/file-content/file-content.component';
 import { FileUploadService } from '../../services/file-upload.service';
 import { NgxDropzoneModule } from 'ngx-dropzone'; // Import the dropzone module
-import { NgIf, NgFor } from '@angular/common';
+import { NgIf, NgFor, isPlatformBrowser } from '@angular/common';
 
 interface TreeNode {
   label: string;
@@ -47,7 +47,9 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
   constructor(private folderService: FolderService,
     private loadContent: FileContentComponent,
     private fileUploadService: FileUploadService,
-    private http: HttpClient,) {}
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object // Inject PLATFORM_ID  
+  ) {}
 
   /*ngOnInit() {
     this.loadFolderContents();
@@ -57,20 +59,24 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
     }
   
     loadFolderStructureFromStorage() {
-      const savedStructure = localStorage.getItem('folderStructure');
-      if (savedStructure) {
-        this.nodes = JSON.parse(savedStructure);
-        console.log('Loaded folder structure from localStorage:', this.nodes);
-        this.contentLoaded = true; // Mark content as loaded
-      } else {
-        console.log('No folder structure found in localStorage.');
+      if (isPlatformBrowser(this.platformId)) {
+        const savedStructure = localStorage.getItem('folderStructure');
+        if (savedStructure) {
+          this.nodes = JSON.parse(savedStructure);
+          console.log('Loaded folder structure from localStorage:', this.nodes);
+          this.contentLoaded = true;
+        } else {
+          console.log('No folder structure found in localStorage.');
+        }
       }
     }
-
+  
     clearFolderStructure() {
-      localStorage.removeItem('folderStructure');
-      this.nodes = []; // Reset the nodes
-      this.contentLoaded = false; // Mark content as not loaded
+      if (isPlatformBrowser(this.platformId)) {
+        localStorage.removeItem('folderStructure');
+      }
+      this.nodes = [];
+      this.contentLoaded = false;
       console.log('Folder structure cleared.');
     }
 

@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { response } from 'express';
 
 @Component({
   selector: 'app-login',
@@ -20,9 +21,12 @@ export class LoginComponent {
 
   login() {
     this.authService.login(this.username, this.password).subscribe({
-      next: () => {
-        this.authService.saveSession(); // Save session on successful login
-        location.href = '/'; // Redirect to home
+      next: (response) => {
+        // Now we expect 'response' to be of type LoginResponse
+        if (response && response.token) {
+          this.authService.saveSession(response.token); // Save session on successful login
+          location.href = '/'; // Redirect to home
+        }
       },
       error: (err) => {
         this.errorMessage = err.error?.error || 'Login failed';

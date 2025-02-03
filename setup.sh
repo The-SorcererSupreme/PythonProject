@@ -4,6 +4,7 @@ sudo apt install npm -y
 sudo apt-get upgrade -y
 cd ~
 
+sudo apt install postgresql postgresql-contrib
 
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash

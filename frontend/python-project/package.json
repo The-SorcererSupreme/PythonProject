@@ -27,6 +27,7 @@
     "@primeng/themes": "^19.0.5",
     "angular-split": "^18.0.0",
     "express": "^4.21.2",
+    "jwt-decode": "^4.0.0",
     "monaco-editor": "^0.52.2",
     "ngx-dropzone": "^3.1.0",
     "primeicons": "^7.0.0",
