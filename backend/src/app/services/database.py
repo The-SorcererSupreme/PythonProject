@@ -49,3 +49,13 @@ class Database:
         results = cursor.fetchall()
         cursor.close()  # Close the cursor after fetching results
         return results
+
+    def delete_query(self, query, params=None):
+        """Execute a DELETE query and return the deleted row (if any)."""
+        connection = self.connect()
+        cursor = connection.cursor()
+        cursor.execute(query, params or ())
+        deleted_row = cursor.fetchone()
+        connection.commit()
+        cursor.close()
+        return deleted_row

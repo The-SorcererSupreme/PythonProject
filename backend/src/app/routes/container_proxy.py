@@ -6,6 +6,9 @@ import logging
 from pprint import pformat
 import json
 from urllib.request import urlopen
+import docker
+from app.utils.auth import token_required  # Token required to get file-strucutre
+
 
 # Configure logging
 logging.basicConfig(
@@ -29,7 +32,27 @@ CONTAINER_ROUTES = ['/api/file-structure', '/api/getFile']
 # Create a Blueprint for the proxy
 container_proxy = Blueprint("container_proxy", __name__)
 
-def forward_request_to_container(endpoint, path):
+def get_container_ip(container_id):
+    """
+    Fetch the IP address of a running container given its containerId.
+    """
+    try:
+        client = docker.from_env()  # Connect to Docker API
+        container = client.containers.get(container_id)  # Get the container by ID
+
+        # Extract the IP address from the container's network settings
+        container_ip = container.attrs['NetworkSettings']['IPAddress']
+        return container_ip
+
+    except docker.errors.NotFound:
+        logging.error(f"Container with ID {container_id} not found.")
+        return None
+    except docker.errors.APIError as e:
+        logging.error(f"Docker API error: {str(e)}")
+        return None
+    
+
+def forward_request_to_container(endpoint, path, container_id):
     print(f"forward_request_to_container triggered with: {endpoint}, {path}")
     """
     Forward a request to the container's API, appending the file path in the query string.
@@ -39,11 +62,20 @@ def forward_request_to_container(endpoint, path):
     Returns:
         Flask Response: The container's response, rewrapped in a Flask response object.
     """
-    # Use urlencode to safely encode the path for the query string
-    query_string = urlencode({'path': path})
-    url = f"{CONTAINER_BASE_URL}{endpoint}?{query_string}"  # Pass the path in the query string
-    print(f"Forwarding request from container_proxy with path: ", url)
+    if not container_id:
+        return jsonify({"error": "Container ID is required"}), 400
+    # Fetch the correct container's IP dynamically
+    container_ip = get_container_ip(container_id)
+    if not container_ip:
+        return jsonify({"error": f"Could not determine IP for container {container_id}"}), 500
     
+
+    # Construct the correct container URL
+    container_url = f"http://{container_ip}:{CONTAINER_PORT}{endpoint}"
+    query_string = urlencode({'path': path, 'containerId': container_id})
+    url = f"{container_url}?{query_string}"  # Append query params
+    print(f"Forwarding request to container URL: {url}")
+
     # Handle the request based on its method
     try:
         if request.method == "GET":
@@ -105,13 +137,19 @@ def is_allowed_file_extension(file_path):
 
 # Handle GET requests to /api/file-structure and /api/getFile, which should be forwarded to the container
 @container_proxy.route('/api/file-structure', methods=['GET'])
-def proxy_file_structure():
+@token_required
+def proxy_file_structure(container_id):
+    print(f"Calling container file structure for: {container_id}")
     if is_container_route(request.path):
         # Get the file path from the request and forward it to the container
         file_path = request.args.get("path")  # Extract the path from the query parameters
-        if file_path:
+        container_id = request.args.get("containerId")  # Extract containerId
+        print(f"File path: {file_path}")
+        print(f"containerID: {container_id}")
+
+        if file_path and container_id:
             # Forward the file path correctly with the query string
-            return forward_request_to_container('/api/file-structure', file_path)
+            return forward_request_to_container('/api/file-structure', file_path, container_id)
         else:
             return jsonify({"error": "File path is required"}), 400
     else:

@@ -1,5 +1,6 @@
 # /backend/src/app/services/docker_service.py
 from app.utils.docker_manager import DockerClientManager, DockerContainerManager
+from app.services.database import Database  # Import your Database class
 import os
 import requests
 import time
@@ -15,6 +16,9 @@ class DockerService:
         # Initialize the container manager
         self.container_manager = DockerContainerManager(self.client_manager)
         print("Container initialized")
+        # Initialize the Database class
+        self.db = Database()
+        print("Database initialized")
 
 
 
@@ -52,7 +56,7 @@ class DockerService:
 
 
 
-    def process_file_in_container(self, file_bytes, archive_name):
+    def process_file_in_container(self, file_bytes, archive_name, user_id):
         """
         Create and run a Docker container to process the file.
         """
@@ -78,12 +82,27 @@ class DockerService:
             file_structure = self.get_file_structure_from_container(container_ip)
             print("File structure:", file_structure)
 
+            # Save the container information to the database, linking to the user
+            self.save_container_to_db(user_id, container.id, container_name, 'Up')
+
             # TODO: Return the file structure to the frontend
 
             return {
                 'container_id': container.id,
-                'status': 'Container created_and_started',
+                'status': 'Up',
                 'file_structure' : file_structure
             }
         except Exception as e:
             raise RuntimeError(f"Error processing file in container: {e}")
+    
+    def save_container_to_db(self, user_id, container_id, container_name, status):
+        """Save container information to the PostgreSQL database."""
+        query = """
+        INSERT INTO containers (user_id, container_id, status)
+        VALUES (%s, %s, %s)
+        """
+        try:
+            self.db.execute_query(query, (user_id, container_id, status))
+            print(f"Container {container_name} saved to database successfully.")
+        except Exception as e:
+            raise RuntimeError(f"Error saving container to database: {e}")

@@ -2,11 +2,12 @@
 import { Component, OnInit, EventEmitter, Output, Inject, PLATFORM_ID } from '@angular/core';
 import { FolderService } from '../../services/folder.service';
 import { TreeModule } from 'primeng/tree';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FileContentComponent } from '../../components/file-content/file-content.component';
 import { FileUploadService } from '../../services/file-upload.service';
 import { NgxDropzoneModule } from 'ngx-dropzone'; // Import the dropzone module
 import { NgIf, NgFor, isPlatformBrowser } from '@angular/common';
+import { ContainersComponent } from '../containers/containers.component';
 
 interface TreeNode {
   label: string;
@@ -24,6 +25,7 @@ interface TreeNode {
     NgxDropzoneModule,
     NgIf,
     NgFor,
+    ContainersComponent,
   ],
   providers: [
     FileContentComponent
@@ -80,7 +82,43 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
       console.log('Folder structure cleared.');
     }
 
-  // Loads the contents of the current folder or a specified path
+  // Call this function when a container is selected
+  loadContainerFolderStructure(containerId: string) {
+    console.log('Fetching folder structure for container:', containerId);
+  
+    this.loading = true; // Show loading indicator
+  
+    // Retrieve the token from localStorage or a service
+    const token = localStorage.getItem("auth_token"); // Adjust if you store the token elsewhere
+  
+    if (!token) {
+      console.error("No token found! User might not be authenticated.");
+      this.loading = false;
+      return;
+    }
+  
+    // Set up HTTP headers with the Bearer token
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+  
+    this.http.get(`http://localhost:8000/api/file-structure?containerId=${containerId}&path=`, { headers }).subscribe({
+      next: (data: any) => {
+        // Handle the folder structure here
+        this.nodes = this.processFolders(data);
+        this.contentLoaded = true;
+        console.log("Updated folder structure from container:", this.nodes);
+        this.loading = false; // Hide loading indicator
+      },
+      error: (err) => {
+        console.error('Error fetching folder structure:', err);
+        this.nodes = []; // Reset nodes on error
+        this.loading = false; // Hide loading indicator
+      }
+    });
+  }
+
+   // Loads the contents of the current folder or a specified path
   loadFolderContents(path: string = '') {
     console.log('Loading contents for path:', path); // Debug log
     this.loading = true; // Show loading indicator
@@ -120,6 +158,13 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
       };
     });
   }
+
+  onContainerSelected(containerId: string) {
+    console.log('Received selected container:', containerId);
+    if (containerId) {
+      this.loadContainerFolderStructure(containerId);
+    }
+  }  
 
   // Event handler for selecting a node
   onNodeSelect(event: any) {

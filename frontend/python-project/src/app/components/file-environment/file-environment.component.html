@@ -1,4 +1,9 @@
 <div class="sidebar-container">
+<app-containers (containerSelected)="onContainerSelected($event)"></app-containers>
+
+<!-- Folder structure display -->
+<p-tree [value]="nodes" (onNodeSelect)="onNodeSelect($event)"></p-tree>
+
       <!-- Only show the p-tree when content is loaded -->
     <div *ngIf="contentLoaded">
       <p-tree  class="sidebar-tree"

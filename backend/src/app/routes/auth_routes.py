@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app.services.user import User  # Import the User class
 from app.services.database import Database
 from app.services.session import Session  # Import session management logic
+from app.utils.auth import token_required  # Token required for logout
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -57,22 +58,18 @@ def guest_login():
     return jsonify(User.guest_login())
 
 @auth_bp.route("/auth/logout", methods=["POST"])
-def logout():
-    """Log out the user by removing the session token from the database."""
-    token = request.headers.get("Authorization")
-
-    if not token or not token.startswith("Bearer "):
-        return jsonify({"error": "Invalid token"}), 400
-
-    token = token.split("Bearer ")[1]  # Extract the actual token
-
+@token_required
+def logout(session_id):
+    """Log out the user by removing their session token."""
+    print(f"Logging out of session {session_id}")
     db = Database()
     session = Session()
 
-    if session.remove_session(db, token):
+    # Remove the session using the session ID
+    if session.remove_session(db, session_id):
         return jsonify({"message": "Logged out successfully"}), 200
-    else:
-        return jsonify({"error": "Invalid or expired session"}), 401
+
+    return jsonify({"error": "Failed to log out"}), 500
 
 @auth_bp.route("/api/files", methods=["GET"])
 def upload_drag_drop():

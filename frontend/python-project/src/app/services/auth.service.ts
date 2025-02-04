@@ -73,9 +73,9 @@ export class AuthService {
       this.clearSession();
       return;
     }
-  
+
     const headers = new HttpHeaders().set("Authorization", `Bearer ${token}`);
-  
+
     this.http.post(`${this.baseUrl}/logout`, {}, { headers }).subscribe({
       next: () => {
         this.clearSession();
