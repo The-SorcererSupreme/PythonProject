@@ -24,6 +24,7 @@ export class ContainerService {
         console.log("Get Containers - Token is set!")
         // Set headers with the JWT token if token exists
         headers = headers.set('Authorization', `Bearer ${token}`);
+        console.log(`Token is: ${token}`)
       }
     }
 

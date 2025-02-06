@@ -2,7 +2,7 @@
 from functools import wraps
 from flask import request, jsonify, current_app
 import jwt
-from app.services.database import Database
+from app.classes.database_actions import Database
 
 def token_required(f):
     """Decorator to check if the user is authenticated and has a valid session."""
@@ -54,4 +54,4 @@ def get_user_session(session_token: str, user_id: int):
     print(f"SELECT id FROM sessions WHERE session_token = '{session_token}' AND user_id = {user_id};")
     result = db.fetch_query("SELECT id FROM sessions WHERE session_token = %s AND user_id = %s", (session_token, user_id))
     print(f"Result: {result[0]['id']}")
-    return result[0]['id'] if result else None  # Return the user_id if session exists
+    return result[0]['id'] if result else None  # Return the user_id if session exists to use it in other modules

@@ -10,7 +10,7 @@ load_dotenv()
 def create_app():
     app = Flask(__name__)
     CORS(app, origins=["http://localhost:4200"], supports_credentials=True, 
-         allow_headers=["Authorization", "Content-Type"])
+         allow_headers=["Authorization", "Content-Type", "Access-Control-Allow-Origin"])
 
     # Fetch .env variables
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
@@ -21,7 +21,7 @@ def create_app():
     # Add middleware to handle dynamic routing
     from app.utils.request_router import RequestRoutingMiddleware
     app.wsgi_app = RequestRoutingMiddleware(app.wsgi_app)
-
+    
     # Register blueprints
     from app.routes.auth_routes import auth_bp
     app.register_blueprint(auth_bp)

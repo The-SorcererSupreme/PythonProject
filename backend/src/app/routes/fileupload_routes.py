@@ -2,7 +2,7 @@
 
 from flask import Blueprint, request, jsonify, current_app
 #from app.services.fileupload_service import FileUploadService
-from app.services.docker_service import DockerService
+from app.classes.container_interactions import DockerService
 from app.utils.auth import token_required  # Import the decorator
 import jwt
 from functools import wraps

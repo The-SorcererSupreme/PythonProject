@@ -1,13 +1,14 @@
 # /backend/src/app/routes/container_routes.py
 from flask import Blueprint, request, jsonify, current_app
-from app.services.database import Database
-#from app.services.docker_service import DockerService
+from app.classes.database_actions import Database
 from functools import wraps
 from app.utils.auth import token_required  # Import the decorator
 
 
+#from flask_cors import CORS
 # Define the blueprint
 container_routes = Blueprint('container_routes', __name__)
+#CORS(container_routes)
 
 # Route to get the containers for the logged-in user
 @container_routes.route('/api/containers', methods=['GET'])
@@ -16,6 +17,7 @@ def get_user_containers(session_id):
     
     # Fetch containers from the database for the user
     try:
+        print("Inside container_routes")
         db = Database()
         if session_id:
             query = "SELECT user_id FROM sessions WHERE id = %s"

@@ -1,6 +1,6 @@
 from werkzeug.wrappers import Request, Response
 import json
-from app.routes.container_routes import container_routes
+from flask import jsonify
 
 class RequestRoutingMiddleware:
     """
@@ -18,6 +18,28 @@ class RequestRoutingMiddleware:
     def __call__(self, environ, start_response):
         request = Request(environ)
         request_path = request.path
+        request_headers = request.headers
+        request_method = request.method
+
+        # Skip authentication check for OPTIONS pre-flight requests
+        if request_method == "OPTIONS":
+            return self.app(environ, start_response)
+        # Check authorization for request (not authentication)
+        def check_authentication(request_path):
+            print(f"Request header is: {request_headers}")
+            print("Check if authorization token is set if needed...")
+            auth_header = request.headers.get("Authorization")
+            print(f"Auth header is: {auth_header}")
+            from app.services.authorization_check import AuthenticationService
+
+            if AuthenticationService.is_protected_route(request_path):
+                token = AuthenticationService.extract_token(request)
+                if not token:
+                    return jsonify({'message': 'Token is missing!'}), 403
+                print(f"Authorization token provided: {token}")
+            else:
+                print("No authorization token is needed!")
+        check_authentication(request_path)        
         print(f"Requested is: {request}")
         print(f"Requested path: {request_path}")
         print(f"------------------------------")
@@ -29,6 +51,13 @@ class RequestRoutingMiddleware:
             print('In environ: ', environ)
             return self.app(environ, start_response)
 
+        # Container-specific routes (like /api/containers) handled by container_routes blueprint
+        if any(request_path.startswith(route) for route in self.container_routes):
+            print(f"Container routes matched: {request_path}")
+            print(f"Switching to container_routes")
+            # Use Flask's routing to route the request to the container_routes blueprint
+            return self.app(environ, start_response)
+        
         # Container-specific routes
         if any(request_path.startswith(route) for route in self.container_proxy):
             # Forwarded to container proxy (logic handled in `container_proxy.py`)
@@ -40,13 +69,6 @@ class RequestRoutingMiddleware:
                 status=200,
             )
             return response(environ, start_response)
-        
-        # Container-specific routes (like /api/containers) handled by container_routes blueprint
-        if any(request_path.startswith(route) for route in self.container_routes):
-            print(f"Container routes matched: {request_path}")
-            print(f"Switching to container_routes")
-            # Use Flask's routing to route the request to the container_routes blueprint
-            return self.app(environ, start_response)
 
         # Dynamic routing for other sources
         if any(request_path.startswith(route) for route in self.dynamic_routes):

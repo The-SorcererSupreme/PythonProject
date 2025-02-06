@@ -1,6 +1,6 @@
 # /backend/src/app/services/docker_service.py
-from app.utils.docker_manager import DockerClientManager, DockerContainerManager
-from app.services.database import Database  # Import your Database class
+from app.classes.container_actions import DockerClientManager, DockerContainerManager
+from app.classes.database_actions import Database  # Import your Database class
 import os
 import requests
 import time
