@@ -6,6 +6,8 @@ import requests
 import time
 from io import BytesIO
 import tarfile
+import random
+import socket
 
 class DockerService:
     def __init__(self):
@@ -23,7 +25,7 @@ class DockerService:
 
 
 
-    def get_file_structure_from_container(self, container_ip):
+    def get_file_structure_from_container(self, container_ip, archive_name):
         """Fetch the file structure from the running container via its API."""
         try:
             url = f'http://{container_ip}:6000/api/file-structure'
@@ -50,6 +52,21 @@ class DockerService:
             # Upload to /workspace in the container
             container.put_archive(path="/workspace", data=tar_stream)
             print(f"Uploaded '{archive_name}' to container '{container_name}'")
+
+            # Command to extract the archive inside the container
+            command = f"unzip /workspace/{archive_name} -d /workspace/"
+            # Execute the extraction command inside the container
+            exit_code, output = container.exec_run(command)
+            # If the extraction fails, the exit code will not be 0
+            if exit_code != 0:
+                raise RuntimeError(f"Failed to extract archive: {output.decode()}")
+
+            print(f"Archive '{archive_name}' extracted successfully in container '{container_name}'")
+            command = f"rm -f /workspace/{archive_name}"
+            exit_code, output = container.exec_run(command)
+            if exit_code != 0:
+                raise RuntimeError(f"Failed to delete archive: {output.decode()}")
+            print(f"Archive '{archive_name}' removed in '{container_name}'")
         except Exception as e:
             raise RuntimeError(f"Error uploading file to container '{container_name}': {e}")
 
@@ -63,12 +80,23 @@ class DockerService:
         print("Processing File to container")
         try:
             # Generate container name and set image
-            container_name = f"processor_{archive_name.split('.')[0]}"
+            timestamp = int(time.time())  # Generate a timestamp
+            container_name = f"processor_{user_id}_{archive_name.split('.')[0]}_{timestamp}"
             image_name = "file-service-container"  # Update if a custom image is used
 
-            # Create new file-service container
-            container = self.container_manager.create_container(image_name, container_name, ports={'6000': '6000'}, volumes=None)
-            print("Container created!")
+            # Get an available host port
+            print("Opening get_available_port function")
+            host_port = self.get_available_port(5000, 65000)  
+            container_port = 6000  # The internal container port remains the same
+
+            # Create new file-service container with dynamic port mapping
+            container = self.container_manager.create_container(
+            image_name, 
+            container_name, 
+            ports={str(container_port): str(host_port)}, 
+            volumes=None
+            )
+            print(f"Container created on port {host_port}!")
 
             # Start the container
             container_ip = self.container_manager.run_container(container)
@@ -79,11 +107,11 @@ class DockerService:
             self.upload_file_to_container(container_name, file_bytes, archive_name)
             time.sleep(4)
             # Fetch the file structure from the container
-            file_structure = self.get_file_structure_from_container(container_ip)
+            file_structure = self.get_file_structure_from_container(container_ip, archive_name)
             print("File structure:", file_structure)
 
             # Save the container information to the database, linking to the user
-            self.save_container_to_db(user_id, container.id, container_name, 'Up')
+            self.save_container_to_db(user_id, container.id, container_name, 'Up', host_port)
 
             # TODO: Return the file structure to the frontend
 
@@ -95,14 +123,24 @@ class DockerService:
         except Exception as e:
             raise RuntimeError(f"Error processing file in container: {e}")
     
-    def save_container_to_db(self, user_id, container_id, container_name, status):
+    def save_container_to_db(self, user_id, container_id, container_name, status, host_port):
         """Save container information to the PostgreSQL database."""
         query = """
-        INSERT INTO containers (user_id, container_id, status)
-        VALUES (%s, %s, %s)
+        INSERT INTO containers (user_id, container_id, status, host_port)
+        VALUES (%s, %s, %s, %s)
         """
         try:
-            self.db.execute_query(query, (user_id, container_id, status))
+            self.db.execute_query(query, (user_id, container_id, status, host_port))
             print(f"Container {container_name} saved to database successfully.")
         except Exception as e:
             raise RuntimeError(f"Error saving container to database: {e}")
+        
+    def get_available_port(self, start=5000, end=65000):
+        """Find an available port within the specified range."""
+        print("Inside get_available_port function")
+        while True:
+            port = random.randint(start, end)  # Select a random port
+            print(f"Checking if port {port} is unassigned...")
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                if s.connect_ex(('localhost', port)) != 0:  # If port is not in use
+                    return port

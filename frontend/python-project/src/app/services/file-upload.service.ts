@@ -1,6 +1,5 @@
-// src/app/services/file-upload.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient,HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';  // Import AuthService to get the token
 
@@ -8,26 +7,30 @@ import { AuthService } from './auth.service';  // Import AuthService to get the 
   providedIn: 'root',
 })
 export class FileUploadService {
+  private apiUrl = 'http://127.0.0.1:8000/api/upload';  // The backend API endpoint
 
-  private apiUrl = 'http://127.0.0.1:8000/api/upload';  // The URL where we will send the file to upload
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
-  constructor(private http: HttpClient, private authService: AuthService,) {}
+  uploadFiles(formData: FormData, uploadType: string = 'drag_and_drop'): Observable<any> {
 
-  uploadFiles(files: File[], uploadType: string = 'drag_and_drop'): Observable<any> {
-    const formData = new FormData();
-    files.forEach(file => formData.append('file', file, file.name));
-    formData.append('upload_type', uploadType); // Add upload-type for use in fileupload_routes.py
+    /* // Append each file and ensure dynamic archive name is included
+    files.forEach(file => {
+      formData.append('file', file, file.name);
+      formData.append('archive_name', file.name); // Ensure archive name is included
+    });*/
+
+    formData.append('upload_type', uploadType); // Optional: Specify upload type
 
     // Get the token from AuthService
     const token = this.authService.getToken();
 
-    // Use append to add Authorization header (important for preserving any existing headers)
+    // Create headers
     let headers = new HttpHeaders();
     if (token) {
       headers = headers.append('Authorization', `Bearer ${token}`);
     }
 
-    // Make the API request with the token and headers
+    // Make the API request with headers
     return this.http.post(this.apiUrl, formData, { headers });
   }
 }

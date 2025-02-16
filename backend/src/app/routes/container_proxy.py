@@ -2,6 +2,7 @@ import requests
 from flask import Blueprint, request, jsonify
 from urllib.parse import urlencode
 from app.services.yaml_service import convert_yaml_to_json_array
+from app.classes.database_actions import Database
 import logging
 from pprint import pformat
 import json
@@ -37,12 +38,22 @@ def get_container_ip(container_id):
     Fetch the IP address of a running container given its containerId.
     """
     try:
-        client = docker.from_env()  # Connect to Docker API
-        container = client.containers.get(container_id)  # Get the container by ID
+        db = Database()  # Initialize the Database class
+        query = """
+        SELECT container_id FROM containers WHERE id = %s
+        """
+        result = db.fetch_query(query, (container_id,))
+        print("Querying container_id")
+        if result:  # If the container ID exists in the database
+            container_id = result[0]['container_id']
+            print(f"Fetched container ID from database: {container_id}")
+            print("Found a container_id")
+            client = docker.from_env()  # Connect to Docker API
+            container = client.containers.get(container_id)  # Get the container by ID
 
-        # Extract the IP address from the container's network settings
-        container_ip = container.attrs['NetworkSettings']['IPAddress']
-        return container_ip
+            # Extract the IP address from the container's network settings
+            container_ip = container.attrs['NetworkSettings']['IPAddress']
+            return container_ip
 
     except docker.errors.NotFound:
         logging.error(f"Container with ID {container_id} not found.")
@@ -52,7 +63,7 @@ def get_container_ip(container_id):
         return None
     
 
-def forward_request_to_container(endpoint, path, container_id):
+def forward_request_to_container(endpoint, path, container_id, content=None):
     print(f"forward_request_to_container triggered with: {endpoint}, {path}")
     """
     Forward a request to the container's API, appending the file path in the query string.
@@ -65,7 +76,9 @@ def forward_request_to_container(endpoint, path, container_id):
     if not container_id:
         return jsonify({"error": "Container ID is required"}), 400
     # Fetch the correct container's IP dynamically
+    print(f"Calling IP for container ID: {container_id}")
     container_ip = get_container_ip(container_id)
+    print(f"Container IP: {container_ip}")
     if not container_ip:
         return jsonify({"error": f"Could not determine IP for container {container_id}"}), 500
     
@@ -97,6 +110,11 @@ def forward_request_to_container(endpoint, path, container_id):
             method = "POST"
             # Forward POST request with JSON data
             container_response = requests.post(url, json=request.json)
+            json_content = container_response.text
+            logging.info(f"{method} - Raw container response: {json_content}")  
+            content_data = json.loads(json_content)
+            logging.info(f"{method} - Container response: {content_data}")
+            return container_response.json(), container_response.status_code
         elif request.method == "PUT":
             method = "PUT"
             # Forward PUT request with JSON data
@@ -138,11 +156,11 @@ def is_allowed_file_extension(file_path):
 # Handle GET requests to /api/file-structure and /api/getFile, which should be forwarded to the container
 @container_proxy.route('/api/file-structure', methods=['GET'])
 @token_required
-def proxy_file_structure(container_id):
-    print(f"Calling container file structure for: {container_id}")
+def proxy_file_structure(user_session):
+    print(f"Calling container file structure for user session: {user_session}")
     if is_container_route(request.path):
         # Get the file path from the request and forward it to the container
-        file_path = request.args.get("path")  # Extract the path from the query parameters
+        file_path = "/workspace/"  # Workspace path of container
         container_id = request.args.get("containerId")  # Extract containerId
         print(f"File path: {file_path}")
         print(f"containerID: {container_id}")

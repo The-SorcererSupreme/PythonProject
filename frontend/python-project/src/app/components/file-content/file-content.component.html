@@ -1,16 +1,44 @@
-<div *ngIf="fileContent !== null; else noContent">
-  <h3>File Content:</h3>
-  <pre>{{ fileContent }}</pre>
+<div class="menu-bar">
+  <!-- Clickable Breadcrumb Navigation -->
+  <div class="breadcrumb">
+    <ng-container *ngIf="filePath">
+      <ng-container *ngFor="let part of pathParts; let i = index">
+        <span class="breadcrumb-item" (click)="navigateTo(i)">{{ part }}</span>
+        <span *ngIf="i < pathParts.length - 1"> / </span>
+      </ng-container>
+    </ng-container>
+  </div>
+
+  <!-- Buttons Aligned to the Right -->
+  <div class="menu-buttons">
+    <button (click)="saveChanges()">Save</button>
+    <button (click)="reloadFile()">Reload</button>
+    <button (click)="closeFile()">Close</button>
+  </div>
 </div>
+
+<!-- Your original editor container -->
+<div class="editor-container" *ngIf="fileContent !== null && !yamlData">
+  <h3>Edit File Content:</h3>
+  <div class="editor-wrapper">
+    <div class="line-numbers" #lineNumbers></div>
+    <textarea class="editor" contenteditable="true" [(ngModel)]="fileContent" (input)="updateLineNumbers()" (input)="onEditorInput()" (scroll)="syncScroll()" #editor></textarea>
+  </div>
+</div>
+
+
 <ng-template #noContent>
   <p>Select a file to display its content</p>
 </ng-template>
+
 <div *ngIf="loading">
   <p>Loading...</p>
 </div>
+
 <div *ngIf="errorMessage">
   <p>Error: {{ errorMessage }}</p>
 </div>
+
 <div *ngIf="yamlData && yamlData.length > 0">
   <h3>YAML Data Form:</h3>
   <code-form-component [yamlStructure]="yamlData"></code-form-component>

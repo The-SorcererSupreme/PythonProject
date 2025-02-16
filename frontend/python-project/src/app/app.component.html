@@ -11,7 +11,7 @@
   <app-header></app-header>
 </mat-toolbar>
 
-<as-split direction="horizontal" class="split-container">
+<as-split *ngIf="authService.isLoggedIn()" direction="horizontal" class="split-container">
 
   <!-- Sidebar (Treeview) Section -->
   <as-split-area [size]="15" class="left-area">
@@ -20,10 +20,13 @@
 
   <!-- Main Content Area -->
   <as-split-area [size]="85">
-    <router-outlet>
-      
-    </router-outlet>
     <code-form-component></code-form-component>
-    <app-file-content [filePath]="selectedFilePath"></app-file-content>
+    <app-file-content [filePath]="selectedFilePath" [selectedContainerId]="selectedContainerId"></app-file-content>
   </as-split-area>
 </as-split>
+
+<div style="background-color: red;">
+<router-outlet>
+  
+</router-outlet>
+</div>

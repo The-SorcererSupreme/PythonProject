@@ -1,43 +1,36 @@
-<div *ngFor="let item of yamlStructure">
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div *ngFor="let item of yamlStructure">
     <!-- Render comments -->
     <div *ngIf="item.type === 'comment'" class="comment">
       # {{ item.value }}
     </div>
-  
-    <!-- Render inputs for editable fields -->
+
+    <!-- Render editable fields -->
     <div *ngIf="item.type !== 'comment'">
       <label [for]="item.name"><strong>{{ item.name }}</strong>:</label>
-      
+
       <!-- Text input -->
-      <input
-        *ngIf="item.type === 'str'"
-        [id]="item.name"
-        [(ngModel)]="item.value"
-        type="text"
-      />
-  
+      <input *ngIf="item.type === 'str'" [id]="item.name" formControlName="{{ item.name }}" type="text" />
+
       <!-- Number input -->
-      <input
-        *ngIf="item.type === 'int'"
-        [id]="item.name"
-        [(ngModel)]="item.value"
-        type="number"
-      />
-  
+      <input *ngIf="item.type === 'int'" [id]="item.name" formControlName="{{ item.name }}" type="number" />
+
       <!-- List input -->
       <div *ngIf="item.type === 'list'">
         <label>List:</label>
-        <div *ngFor="let subItem of item.fields; let i = index">
-          <input [(ngModel)]="subItem.value" type="text" />
-          <button (click)="deleteFieldFromList(item.name, i)">Remove</button>
+        <div *ngFor="let subItem of getFormArray(item.name).controls; let i = index">
+          <input [formControl]="subItem as FormControl" type="text" />
+          <button type="button" (click)="deleteFieldFromList(item.name, i)">Remove</button>
         </div>
-        <button (click)="addFieldToList(item.name)">Add Field</button>
+        <button type="button" (click)="addFieldToList(item.name)">Add Field</button>
       </div>
-  
+
       <!-- Nested dictionary -->
       <div *ngIf="item.type === 'dict'">
         <code-form-component [yamlStructure]="item.fields"></code-form-component>
       </div>
     </div>
   </div>
-  
+
+  <button type="submit">Submit</button>
+</form>

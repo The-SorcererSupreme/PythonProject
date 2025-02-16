@@ -1,10 +1,7 @@
 # /services/yaml_service.py
 import yaml
-import json
-import re
-from flask import jsonify
 import logging
-from pprint import pformat
+from flask import jsonify
 
 ALLOWED_FILE_EXTENSIONS = ['.yml', '.yaml']
 
@@ -16,87 +13,109 @@ logging.basicConfig(
 )
 
 def is_allowed_file_extension(file_path):
-    """
-    Checks if the file path has an allowed extension.
-    """
+    """Checks if the file path has an allowed extension."""
     return any(file_path.endswith(ext) for ext in ALLOWED_FILE_EXTENSIONS)
 
 def preprocess_special_characters(content):
-    """
-    Preprocess special characters in the content to ensure JSON compatibility.
-    - Replaces <br/> with \\n (escaped newline for JSON)
-    - Keeps \n intact for YAML
-    """
-    return content.replace("<br/>", "\\n")  # Preserve <br/> as a visual newline in JSON
+    """Replaces <br/> with \\n to ensure JSON compatibility."""
+    return content.replace("<br/>", "\\n")
 
 def convert_yaml_to_json_array(data, path):
     if not is_allowed_file_extension(path):
-        return {
-            "content": data,
-            "success": True
-        }
+        return {"content": data, "success": True}
 
     try:
         content = data.get('content', '')
 
-        # Preprocess special characters like <br/>
-        processed_content = preprocess_special_characters(content)
+        # Step 1: Index all lines
+        lines = content.splitlines()
+        indexed_lines = []
+        
+        for line_num, line in enumerate(lines, 1):
+            line = line.rstrip()  # Remove trailing spaces
+            
+            if line.startswith("#"):
+                indexed_lines.append({"type": "comment", "line": line, "line_num": line_num})
+            elif line.strip() == "":
+                indexed_lines.append({"type": "empty", "line": "", "line_num": line_num})
+            else:
+                indexed_lines.append({"type": "data", "line": line, "line_num": line_num})
 
-        # Extract comments
-        comment_pattern = re.compile(r'#(.*)')
-        comments = comment_pattern.findall(processed_content)
+        # Step 2: Extract only YAML data lines
+        yaml_content = "\n".join([item["line"] for item in indexed_lines if item["type"] == "data"])
+        yaml_dict = yaml.safe_load(yaml_content) if yaml_content.strip() else {}
 
-        # Remove comments for YAML parsing
-        content_without_comments = re.sub(r'#.*', '', processed_content)
-
-        # Parse YAML into a Python dictionary
-        yaml_dict = yaml.safe_load(content_without_comments)
-
-        # Initialize the resulting JSON array
+        # Step 3: Match parsed data back to original indexed lines
         json_array = []
+        used_lines = set()
 
-        # Add extracted comments to the JSON array
-        for comment in comments:
-            json_array.append({
-                "type": "comment",
-                "name": "comment",
-                "value": comment.strip()
-            })
+        def process_yaml_data(yaml_data, parent_key=None):
+            """Recursively process YAML and match it to indexed lines"""
+            output = []
 
-        # Recursive function to process key-value pairs
-        def process_element(name, value):
-            element = {
-                "type": type(value).__name__,
-                "name": name,
-                "value": value
-            }
+            if isinstance(yaml_data, dict):
+                for key, value in yaml_data.items():
+                    matching_line = next((item for item in indexed_lines if item["line"].startswith(f"{key}:") and item["line_num"] not in used_lines), None)
 
-            # Process nested structures
-            if isinstance(value, dict):
-                element["fields"] = [
-                    process_element(sub_name, sub_value) for sub_name, sub_value in value.items()
-                ]
-            elif isinstance(value, list):
-                element["fields"] = [
-                    process_element("item", sub_value) for sub_value in value
-                ]
+                    line_num = matching_line["line_num"] if matching_line else None
+                    if line_num:
+                        used_lines.add(line_num)
 
-            return element
+                    entry = {
+                        "type": type(value).__name__,
+                        "name": key,
+                        "value": None if isinstance(value, (dict, list)) else value,
+                        "line_num": line_num
+                    }
 
-        # Process each top-level YAML key-value pair
-        for key, value in yaml_dict.items():
-            json_array.append(process_element(key, value))
+                    if isinstance(value, dict):
+                        entry["fields"] = process_yaml_data(value, key)
 
-        # Wrap the JSON array with a success indicator
-        result = {
-            "data": json_array,
-            "success": True
-        }
+                    elif isinstance(value, list):
+                        entry["fields"] = []
+                        for item in value:
+                            if isinstance(item, dict):
+                                entry["fields"].append({
+                                    "type": "dict",
+                                    "name": None,
+                                    "value": None,
+                                    "fields": process_yaml_data(item, key)
+                                })
+                            else:
+                                # Find correct line number for list items
+                                list_line = next((l for l in indexed_lines if f"- {item}" in l["line"] and l["line_num"] not in used_lines), None)
+                                list_item = {
+                                    "type": type(item).__name__,
+                                    "name": None,
+                                    "value": item,
+                                    "line_num": list_line["line_num"] if list_line else None
+                                }
+                                if list_line:
+                                    used_lines.add(list_line["line_num"])
 
-        return json.dumps(result)  # Return the JSON object as a string
+                                entry["fields"].append(list_item)
+
+                    output.append(entry)
+
+            return output
+
+        # Step 4: Convert parsed YAML into JSON format
+        json_array = process_yaml_data(yaml_dict)
+
+        # Step 5: Append comments and empty lines back into the JSON array
+        for line in indexed_lines:
+            if line["type"] in ["comment", "empty"]:
+                json_array.append({
+                    "type": line["type"],
+                    "name": None,
+                    "value": line["line"],
+                    "line_num": line["line_num"]
+                })
+
+        # Sort by line number to preserve order
+        json_array.sort(key=lambda x: x["line_num"] if x["line_num"] is not None else float('inf'))
+
+        return {"data": json_array, "success": True}
 
     except Exception as e:
-        return {
-            "content": f"Error: Failed to parse YAML due to {str(e)}",
-            "success": False
-        }
+        return {"content": f"Error: Failed to parse YAML due to {str(e)}", "success": False}

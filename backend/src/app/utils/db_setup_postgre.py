@@ -79,6 +79,7 @@ def create_tables(cursor):
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         container_id TEXT UNIQUE NOT NULL,
         status TEXT DEFAULT 'stopped',  -- Added status column for container state
+        host_port INTEGER UNIQUE NOT NULL,  -- Stores assigned host port
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)

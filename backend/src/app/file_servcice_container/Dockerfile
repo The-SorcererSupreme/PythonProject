@@ -7,6 +7,9 @@ WORKDIR /workspace
 # Copy the monitoring script to a separate directory
 COPY container_monitor.py /app/
 
+# Install zip
+RUN apt-get update && apt-get install -y unzip
+
 # Install dependencies
 RUN pip install --no-cache-dir watchfiles flask requests Flask-Cors
 

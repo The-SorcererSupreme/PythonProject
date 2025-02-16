@@ -1,10 +1,10 @@
 <div class="sidebar-container">
 <app-containers (containerSelected)="onContainerSelected($event)"></app-containers>
 
-<!-- Folder structure display -->
-<p-tree [value]="nodes" (onNodeSelect)="onNodeSelect($event)"></p-tree>
+<!-- Folder structure display 
+<p-tree [value]="nodes" (onNodeSelect)="onNodeSelect($event)"></p-tree>-->
 
-      <!-- Only show the p-tree when content is loaded -->
+    <!-- Only show the p-tree when content is loaded -->
     <div *ngIf="contentLoaded">
       <p-tree  class="sidebar-tree"
               [value]="nodes"
@@ -20,9 +20,10 @@
       <div *ngIf="!contentLoaded" class="drag-drop-area">
         <ngx-dropzone (change)="onDrop($event)" [multiple]="false" [accept]="'*, application/zip, application/x-zip-compressed'">
           <div class="dropzone-label">Drag and drop your .zip archive here</div>
+          <!--
           <div *ngIf="files.length" class="file-list">
             <div *ngFor="let file of files">{{ file.name }}</div>
-          </div>
+          </div>-->
           <input type="hidden" name="upload_type" value="drag_and_drop" />
         </ngx-dropzone>
         <button (click)="connectToGit()">Connect to Git</button>

@@ -18,6 +18,7 @@ import { FileEnvironmentComponent } from './components/file-environment/file-env
 import { FileContentComponent } from './components/file-content/file-content.component';
 import { DynamicYamlFormComponent} from './components/code-form/code-form.component';
 import { HeaderComponent } from './components/header/header.component';
+import { AuthService } from './services/auth.service';
 @Component({
     selector: 'app-root',
     standalone: true,
@@ -53,12 +54,16 @@ export class AppComponent {
   //fileContent: string | null = null; // Content of the selected file
 
   //constructor(private folderService: FolderService, private http: HttpClient) {}
+  constructor(public authService: AuthService) {}
 
   selectedFilePath: string | null = null; // Store the selected file path
+  selectedContainerId: string | null = null;
 
-  onFileSelected(filePath: string): void {
-    console.log('File path received in AppComponent:', filePath);
-    this.selectedFilePath = filePath; // Update the selected file path
+  onFileSelected(data: { filePath: string, containerId: string }) {
+    console.log('File path received in AppComponent:', data.filePath);
+    console.log('ContainerID received in AppComponent:', data.containerId);
+    this.selectedFilePath = data.filePath; // Update the selected file path
+    this.selectedContainerId = data.containerId; // Set the container ID
   }
 
   // Toggles the side navigation menu

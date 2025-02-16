@@ -36,7 +36,7 @@ interface TreeNode {
 
 
 export class FileEnvironmentComponent /*implements OnInit*/ {
-  @Output() fileSelected = new EventEmitter<string>(); // Emit selected file path
+  @Output() fileSelected = new EventEmitter<{ filePath: string, containerId: string }>(); // Emit selected file path
 
   loading: boolean = false; // Indicates whether data is being loaded
   nodes: TreeNode[] = []; // Tree structure for <p-tree>
@@ -45,6 +45,7 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
   fileContent: string | null = null; // Content of the selected file
   files: File[] = [];
   contentLoaded = false;
+  selectedContainerId: string | null = null; // Store the container ID persistently
 
   constructor(private folderService: FolderService,
     private loadContent: FileContentComponent,
@@ -102,7 +103,7 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
       Authorization: `Bearer ${token}`
     });
   
-    this.http.get(`http://localhost:8000/api/file-structure?containerId=${containerId}&path=`, { headers }).subscribe({
+    this.http.get(`http://localhost:8000/api/file-structure?containerId=${containerId}`, { headers }).subscribe({
       next: (data: any) => {
         // Handle the folder structure here
         this.nodes = this.processFolders(data);
@@ -162,6 +163,7 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
   onContainerSelected(containerId: string) {
     console.log('Received selected container:', containerId);
     if (containerId) {
+      this.selectedContainerId = containerId; // Store it for later use
       this.loadContainerFolderStructure(containerId);
     }
   }  
@@ -176,9 +178,12 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
       this.loadFolderContents(folderPath);
     } else if (node.data === 'File') {
       console.log('Selected file:', node.label);
-      if (node.path) {
-        console.log("Entering fetchFile content")
-        this.fileSelected.emit(node.path); // Emit the file path to the parent
+      if (node.path && this.selectedContainerId) {
+        console.log("Fetching file content with container ID:", this.selectedContainerId);
+        this.fileSelected.emit({
+          filePath: node.path,
+          containerId: this.selectedContainerId
+        });
       } else {
         console.error('File path missing for selected node');
       }
@@ -187,43 +192,52 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
 
   onDrop(event: any) {
     console.log('Drop event:', event);
-
-    if (event && event.addedFiles) {
+  
+    if (event && event.addedFiles && event.addedFiles.length > 0) {
       this.files = event.addedFiles;
       console.log('Files dropped:', this.files);
-      this.uploadFiles(this.files);
+  
+      // Extract the file name dynamically
+      const archiveName = this.files[0].name;
+      console.log('Extracted archive name:', archiveName);
+  
+      // Pass the extracted file name to uploadFiles function
+      this.uploadFiles(this.files, archiveName);
     } else {
       console.log('No files added.');
     }
   }
-
-  uploadFiles(files: File[]) {
-    this.fileUploadService.uploadFiles(files).subscribe({
+  
+  uploadFiles(files: File[], archiveName: string) {
+    const formData = new FormData();
+    formData.append('file', files[0]); // Append the file
+    formData.append('archive_name', archiveName); // Send the actual archive name
+  
+    this.fileUploadService.uploadFiles(formData).subscribe({
       next: (response) => {
         console.log('Upload successful:', response);
-        console.log('FileStructure: ', response.file_structure)
+        console.log('File Structure:', response.file_structure);
+  
         if (response && response.file_structure) {
-          // Use the folder structure returned from the backend
           this.nodes = this.processFolders(response.file_structure, '');
-          
-          localStorage.setItem('folderStructure', JSON.stringify(this.nodes));  // Save folder structure to localStorage
-
-          this.loading = false; // Hide loading indicator
-          // Once files are added, content is considered loaded
+          localStorage.setItem('folderStructure', JSON.stringify(this.nodes));
+  
+          this.loading = false;
           this.contentLoaded = true;
           console.log('Folder structure received from backend:', this.nodes);
         }
       },
       error: (error) => {
         console.error('Upload failed:', error);
-        this.nodes = []; // Reset tree nodes on error
-        this.loading = false; // Hide loading indicator
+        this.nodes = [];
+        this.loading = false;
       },
       complete: () => {
         console.log('File upload process completed.');
       }
     });
   }
+  
   
 
   // Placeholder methods for button actions

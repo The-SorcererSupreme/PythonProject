@@ -11,6 +11,7 @@ export class FolderService {
 
   constructor(private http: HttpClient,) {}
 
+
   // Method to get folder contents
   getFolderContents(path: string = ''): Observable<any> {
     const url = path ? `${this.baseUrl}/files?path=${encodeURIComponent(path)}` : `${this.baseUrl}/files`;
@@ -19,10 +20,37 @@ export class FolderService {
   }
 
   // New method to fetch file content
-  fetchFileContent(path: string): Observable<any> {
-    const url = `${this.baseUrl}/getFile?path=${encodeURIComponent(path)}`;
-    console.log('Requesting file content URL:', url);  // Debug log for the file content request
-    return this.http.get(url);
+  fetchFileContent(path: string, container_id: string): Observable<any> {
+    const url = `${this.baseUrl}/getFile?containerID=${encodeURIComponent(container_id)}&path=${encodeURIComponent(path)}`;
+    // Get the token from local storage or any other storage mechanism you use
+    const token = localStorage.getItem('auth_token');  // Replace with your token storage method
 
+    // Add the token to the HTTP request headers
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+    };
+
+    console.log('Requesting URL:', url);  // Debug log for the folder contents request
+
+    return timer(300).pipe(
+      switchMap(() => 
+      this.http.get(url, { headers })
+    ));
+  }
+  saveFileContent(path: string, container_id: string, content: string): Observable<any> {
+    const url = `${this.baseUrl}/saveFile?containerID=${encodeURIComponent(container_id)}&path=${encodeURIComponent(path)}`; // The actual API endpoint for saving the file
+    const body = {
+      content,
+    };
+    // Get the token from local storage or any other storage mechanism you use
+    const token = localStorage.getItem('auth_token');  // Replace with your token storage method
+
+    // Add the token to the HTTP request headers
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+    };
+
+    console.log('Requesting URL:', url);
+    return this.http.post<any>(url, body, { headers });
   }
 }

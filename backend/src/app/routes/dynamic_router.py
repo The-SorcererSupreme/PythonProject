@@ -12,6 +12,7 @@ def handle_get_file():
     """
     endpoint = request.path
     file_path = request.args.get("path")  # File path as a query parameter
+    container_id = request.args.get("containerID")
 
     print(f"File path received: {file_path}")
     
@@ -27,7 +28,7 @@ def handle_get_file():
         if source_type == "container":
             # Forward the request to the container_proxy if source is 'container'
             print("Routing to container with: ", file_path)
-            return forward_request_to_container(endpoint, file_path)  # Call the function to forward to container
+            return forward_request_to_container(endpoint, file_path, container_id)  # Call the function to forward to container
         
         elif source_type == "git":
             # Dummy logic for git source
@@ -46,10 +47,6 @@ def handle_get_file():
         
         else:
             return jsonify({"error": f"Unknown source type: {source_type}"}), 400
-        
-        # Process the file based on its extension
-        response_data = process_file(file_path, source_type)
-        return jsonify(response_data["data"]), response_data["status"]
 
     except ValueError as e:
         # Handle known errors, e.g., if source type is invalid
@@ -61,36 +58,6 @@ def handle_get_file():
         # Catch any other errors
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
-
-def process_file(file_path, source_type):
-    """
-    Processes the file based on its extension and manipulates the response based on the source type.
-    """
-    # Check if file is YAML
-    if file_path.endswith(('.yaml', '.yml')):
-        print("It is YAML data")
-
-        # Parse the YAML file content
-        #yaml_data = parse_yaml(file_path)
-        #if "error" in yaml_data:
-            # Return error if YAML parsing fails
-        #    return {"data": yaml_data, "status": 400}  # Error during YAML parsing
-
-        # Analyze YAML and generate the form structure
-        form_structure = analyze_yaml(file_path)
-        
-        # Modify form structure based on source type
-        form_structure = modify_form_structure_for_source(form_structure, source_type)
-        
-        return {"data": {"form_structure": form_structure}, "status": 200}
-
-    # Add logic here for other file types (JSON, XML, etc.) if needed
-    # Example:
-    # elif file_path.endswith('.json'):
-    #     return process_json_file(file_path)
-
-    # If the file is not YAML or other supported types, return error
-    return {"data": {"error": "Unsupported file format. Only YAML files are allowed."}, "status": 400}
 
 
 def modify_form_structure_for_source(form_structure, source_type):
@@ -113,3 +80,47 @@ def modify_form_structure_for_source(form_structure, source_type):
         form_structure["message"] = "Form structure for Remote source"
     
     return form_structure
+
+
+
+
+
+
+
+
+@dynamic_router.route('/api/saveFile', methods=['POST'])
+def handle_save_file():
+    """
+    Handles saving a file content dynamically to the specified container.
+    """
+    endpoint = request.path
+    file_path = request.args.get("path")  # File path as a query parameter
+    container_id = request.args.get("containerID")  # Container ID as a query parameter
+    content = request.json.get("content")  # File content from the request body
+    if not file_path:
+        return jsonify({"error": "File path is required"}), 400
+    if not container_id:
+        return jsonify({"error": "Container ID is required"}), 400
+    if not content:
+        return jsonify({"error": "File content is required"}), 400
+
+    # Handle the logic to save the file content.
+    try:
+        # Call the function that saves the file
+        save_response = forward_request_to_container(endpoint, file_path, container_id, content)
+        print(f"Save response: {save_response}")
+        
+        # Now create the response using the returned data
+        return jsonify(save_response), 200
+
+    except Exception as e:
+        print(f"Error while saving file: {e}")
+        return jsonify({"error": f"An error occurred while saving the file: {str(e)}"}), 500
+
+
+def save_file_to_container(container_id, file_path, content):
+    file_name = file_path  # Extract the file name from the full path
+    print(f"Saving file {file_name} to container {container_id}")
+    print(f"With content: {content}")
+
+    return {"message": "File saved successfully", "saved_file" : file_name}

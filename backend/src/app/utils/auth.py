@@ -8,6 +8,7 @@ def token_required(f):
     """Decorator to check if the user is authenticated and has a valid session."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        print("Token requred! Checking if it's set...")
         token = None
 
         # Extract token from Authorization header

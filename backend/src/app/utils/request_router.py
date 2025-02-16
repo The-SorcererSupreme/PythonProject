@@ -10,7 +10,7 @@ class RequestRoutingMiddleware:
         self.app = app
         self.backend_routes = ["/auth", "/api/upload"]
         self.container_proxy = ["/api/file-structure"]
-        self.dynamic_routes = ["/api/getFile"]
+        self.dynamic_routes = ["/api/getFile", "/api/saveFile"]
         self.container_routes = ["/api/containers"]  # CHANGE TO backend_routes
         print(f"------------------------------")
         print("Request router initiated")
@@ -68,7 +68,7 @@ class RequestRoutingMiddleware:
                 content_type="application/json",
                 status=200,
             )
-            return response(environ, start_response)
+            return self.app(environ, start_response)
 
         # Dynamic routing for other sources
         if any(request_path.startswith(route) for route in self.dynamic_routes):

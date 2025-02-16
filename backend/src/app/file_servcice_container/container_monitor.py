@@ -1,4 +1,5 @@
 from watchfiles import watch
+import logging
 import os
 from flask import Flask, jsonify, request
 from threading import Thread
@@ -11,6 +12,16 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app, origins="*")
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,  # Set logging level
+    format="%(asctime)s [%(levelname)s] - %(message)s",
+    handlers=[
+        logging.StreamHandler()  # Log to stdout (Docker will capture this)
+    ]
+)
+
 # Directory to monitor (this is the container's workspace)
 workspace_path = "/workspace"
 
@@ -66,20 +77,6 @@ def get_file_content():
 
 
 # === Directory Structure Service ===
-def extract_archive(file_path, extract_to):
-    """Extracts an archive file to the specified directory."""
-    try:
-        if file_path.endswith(".zip"):
-            with zipfile.ZipFile(file_path, "r") as zip_ref:
-                zip_ref.extractall(extract_to)
-        elif file_path.endswith((".tar.gz", ".tgz", ".tar")):
-            with tarfile.open(file_path, "r:*") as tar_ref:
-                tar_ref.extractall(extract_to)
-        else:
-            raise ValueError(f"Unsupported archive format: {file_path}")
-    except Exception as e:
-        raise RuntimeError(f"Failed to extract archive '{file_path}': {e}")
-
 
 def get_directory_structure(directory):
     """Recursively generate a dictionary-like structure of the directory."""
@@ -108,10 +105,6 @@ def get_directory_structure(directory):
 def get_file_structure():
     """Endpoint to return the folder structure."""
     try:
-        # Extract the uploaded archive (assume it's already in /workspace/archive.zip)
-        archive_path = os.path.join(workspace_path, "test.zip")  # Change filename as needed
-        extract_archive(archive_path, workspace_path)
-
         # Generate the folder structure after extraction
         folder_structure = get_directory_structure(workspace_path)
         return jsonify(folder_structure), 200
@@ -128,6 +121,49 @@ def monitor_directory():
             print(f"Change detected: {change}")
             # Optionally, update internal state, but for now we expose on-demand
             # Update the file structure or trigger any needed actions here.
+
+@app.route('/api/saveFile', methods=['POST'])
+def save_file():
+    """
+    Endpoint to save file content to a specified file path inside the container.
+    Expects:
+    - Query parameter `path` indicating the file path
+    - JSON body with `content` field containing file content
+    """
+    # Extract the file path from query parameters
+    file_path = request.args.get('path')
+
+    # Ensure the file path is provided
+    if not file_path:
+        return jsonify({"success": False, "error": "File path not provided"}), 400
+
+    # Decode the file path
+    decoded_path = unquote(file_path)
+
+    # Extract file content from request body
+    request_data = request.get_json()
+    if not request_data or 'content' not in request_data:
+        return jsonify({"success": False, "error": "File content not provided"}), 400
+
+    file_content = request_data['content']
+
+    try:
+        os.makedirs(os.path.dirname(decoded_path), exist_ok=True)
+
+        with open(decoded_path, 'w') as file:
+            file.write(file_content)
+
+        logging.info(f"File saved successfully: {decoded_path}")
+
+        response = jsonify({"success": True, "message": f"File saved: {decoded_path}"})
+        return response  # Return only jsonify object
+
+    except Exception as e:
+        logging.error(f"Error saving file {decoded_path}: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+    
+
 
 
 if __name__ == "__main__":
