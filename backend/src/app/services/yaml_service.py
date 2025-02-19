@@ -49,56 +49,83 @@ def convert_yaml_to_json_array(data, path):
         json_array = []
         used_lines = set()
 
-        def process_yaml_data(yaml_data, parent_key=None):
+        def process_yaml_data(yaml_data, parent_key=None, parent_id=None):
             """Recursively process YAML and match it to indexed lines"""
             output = []
-
+            line_counter = 1  # Initialize line counter
+        
             if isinstance(yaml_data, dict):
                 for key, value in yaml_data.items():
-                    matching_line = next((item for item in indexed_lines if item["line"].startswith(f"{key}:") and item["line_num"] not in used_lines), None)
-
+                    matching_line = next((item for item in indexed_lines
+                                          if f"{key}:" in item["line"].replace(" ", "")
+                                          and item["line_num"] not in used_lines), None)
+        
                     line_num = matching_line["line_num"] if matching_line else None
                     if line_num:
                         used_lines.add(line_num)
-
+        
                     entry = {
                         "type": type(value).__name__,
                         "name": key,
                         "value": None if isinstance(value, (dict, list)) else value,
                         "line_num": line_num
                     }
-
+        
                     if isinstance(value, dict):
-                        entry["fields"] = process_yaml_data(value, key)
-
+                        entry["fields"] = process_yaml_data(value, key, parent_id)
+        
                     elif isinstance(value, list):
                         entry["fields"] = []
-                        for item in value:
+                        if parent_id is None:  # Top-level lists like "tags"
+                            list_line_num = line_num
+                        else:  # Nested lists, such as "flags"
+                            list_line_num = parent_id + 1
+        
+                        for index, item in enumerate(value):
                             if isinstance(item, dict):
+                                processed_fields = []
+                                current_line_num = list_line_num + index
+        
+                                for sub_key, sub_value in item.items():
+                                    sub_matching_line = next((l for l in indexed_lines if f"{sub_key}:" in l["line"] and l["line_num"] not in used_lines), None)
+        
+                                    if sub_matching_line:
+                                        sub_line_num = sub_matching_line["line_num"]
+                                        used_lines.add(sub_line_num)
+                                    else:
+                                        current_line_num += 1
+                                        sub_line_num = current_line_num
+        
+                                    processed_fields.append({
+                                        "type": type(sub_value).__name__,
+                                        "name": sub_key,
+                                        "value": sub_value,
+                                        "line_num": sub_line_num,
+                                        "show_name": True  # For dict items, always set show_name to True
+                                    })
+        
                                 entry["fields"].append({
                                     "type": "dict",
-                                    "name": None,
+                                    "name": f"{key}[{index}]",
                                     "value": None,
-                                    "fields": process_yaml_data(item, key)
+                                    "line_num": list_line_num + index,
+                                    "fields": processed_fields
                                 })
                             else:
-                                # Find correct line number for list items
-                                list_line = next((l for l in indexed_lines if f"- {item}" in l["line"] and l["line_num"] not in used_lines), None)
-                                list_item = {
+                                entry["fields"].append({
                                     "type": type(item).__name__,
-                                    "name": None,
+                                    "name": f"{key}[{index}]",
                                     "value": item,
-                                    "line_num": list_line["line_num"] if list_line else None
-                                }
-                                if list_line:
-                                    used_lines.add(list_line["line_num"])
-
-                                entry["fields"].append(list_item)
-
+                                    "line_num": list_line_num + index,
+                                    "show_name": isinstance(item, dict)  # Set show_name to True only for dict items
+                                })
+        
+                        line_counter += len(value)  # Increment line counter by the number of items in the list
+        
                     output.append(entry)
-
+        
             return output
-
+        
         # Step 4: Convert parsed YAML into JSON format
         json_array = process_yaml_data(yaml_dict)
 

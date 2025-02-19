@@ -1,36 +1,88 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
-  <div *ngFor="let item of yamlStructure">
-    <!-- Render comments -->
-    <div *ngIf="item.type === 'comment'" class="comment">
-      # {{ item.value }}
-    </div>
+<form [formGroup]="form" class="code-form" (ngSubmit)="onSubmit()">
+  <h3>YAML Data Form:</h3>
 
-    <!-- Render editable fields -->
-    <div *ngIf="item.type !== 'comment'">
-      <label [for]="item.name"><strong>{{ item.name }}</strong>:</label>
+  <!-- Drag-and-drop container -->
+  <div cdkDropList (cdkDropListDropped)="drop($event)" class="drag-container">
+    
+    <!-- Loop through each item -->
+    <div *ngFor="let item of yamlStructure; let i = index" cdkDrag class="form-row">
+      
+      <!-- Hoverable Insert Button Area -->
+      <div class="insert-area" (mouseenter)="showInsertButton(i)" (mouseleave)="hideInsertButton()">
+        <button *ngIf="showInsertIndex === i" (click)="insertLine(i)">+ Add Line</button>
+      </div>
 
-      <!-- Text input -->
-      <input *ngIf="item.type === 'str'" [id]="item.name" formControlName="{{ item.name }}" type="text" />
+      <div class="form-item">
+        
+        <!-- Drag Handle -->
+        <div cdkDragHandle class="drag-handle">☰</div>
 
-      <!-- Number input -->
-      <input *ngIf="item.type === 'int'" [id]="item.name" formControlName="{{ item.name }}" type="number" />
-
-      <!-- List input -->
-      <div *ngIf="item.type === 'list'">
-        <label>List:</label>
-        <div *ngFor="let subItem of getFormArray(item.name).controls; let i = index">
-          <input [formControl]="subItem as FormControl" type="text" />
-          <button type="button" (click)="deleteFieldFromList(item.name, i)">Remove</button>
+        <!-- Display & Edit Comments -->
+        <div *ngIf="item.type === 'comment'" class="form-comment">
+          <span *ngIf="isEditing !== i" (click)="editLine(i)">{{ item.value }}</span>
+          <input *ngIf="isEditing === i" [(ngModel)]="item.value" (blur)="saveEdit(i)" />
         </div>
-        <button type="button" (click)="addFieldToList(item.name)">Add Field</button>
+
+        <!-- Main Form Field -->
+        <div *ngIf="item.type !== 'comment'" class="display-inline">
+          
+          <!-- Editable Key (Name) -->
+          <label *ngIf="item.type !== 'list' && item.show_name !== false">
+            <span *ngIf="isEditing !== i" (click)="editLine(i)"><strong>{{ item.name }}</strong>:</span>
+            <input *ngIf="isEditing === i" [(ngModel)]="item.name" (blur)="saveEdit(i)" />
+          </label>
+
+          <!-- Editable Value -->
+          <input *ngIf="item.type === 'str' && isEditing === i" [(ngModel)]="item.value" (blur)="saveEdit(i)" />
+          <span *ngIf="item.type === 'str' && isEditing !== i" (click)="editLine(i)">{{ item.value }}</span>
+
+          <input *ngIf="item.type === 'int' && isEditing === i" [(ngModel)]="item.value" type="number" (blur)="saveEdit(i)" />
+          <span *ngIf="item.type === 'int' && isEditing !== i" (click)="editLine(i)">{{ item.value }}</span>
+
+          <!-- Handling List Type -->
+          <div *ngIf="item.type === 'list'">
+            <div [formArrayName]="item.name">
+              <label>{{ item.name }}:</label>
+              <div *ngFor="let subItem of getFormArray(item.name).controls; let j = index" [formGroupName]="j">
+                
+                <div *ngIf="subItem.get('show_name')?.value">
+                  <div *ngFor="let controlKey of getObjectKeys(getFormGroupControls(subItem))">
+                    <label>{{ controlKey }}:</label>
+                    <input [formControlName]="controlKey" type="text" />
+                  </div>
+                </div>
+
+                <div *ngIf="!subItem.get('show_name')?.value">
+                  <input [formControlName]="'value'" type="text" />
+                  <button type="button" (click)="deleteFieldFromList(item.name, j)">Remove</button>
+                </div>
+
+              </div>
+            </div>
+            <button type="button" (click)="addFieldToList(item.name)">Add Field</button>
+          </div>
+
+          <!-- Handling Dict Type -->
+          <div *ngIf="item.type === 'dict'">
+            <code-form-component [yamlStructure]="item.fields"></code-form-component>
+          </div>
+        </div>
+
+        <!-- Move Buttons -->
+        <div class="move-buttons">
+          <button *ngIf="i > 0" (click)="moveLine(i, i - 1)" class="form-option-button">▲</button>
+          <button *ngIf="i < yamlStructure.length - 1" (click)="moveLine(i, i + 1)" class="form-option-button">▼</button>
+          <button (click)="editLine(i)" class="form-option-button">Edit</button>
+          <button (click)="deleteLine(i)" class="form-option-button delete-btn">Delete</button>
+        </div>
       </div>
 
-      <!-- Nested dictionary -->
-      <div *ngIf="item.type === 'dict'">
-        <code-form-component [yamlStructure]="item.fields"></code-form-component>
-      </div>
     </div>
-  </div>
 
-  <button type="submit">Submit</button>
+    <!-- Insert Button for Adding a Line at the End -->
+    <div class="insert-area" (mouseenter)="showInsertButton(yamlStructure.length)" (mouseleave)="hideInsertButton()">
+      <button *ngIf="showInsertIndex === yamlStructure.length" (click)="insertLine(yamlStructure.length)">+ Add Line</button>
+    </div>
+
+  </div>
 </form>

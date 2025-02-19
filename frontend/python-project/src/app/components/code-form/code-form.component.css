@@ -1,0 +1,140 @@
+.code-form {
+    flex-grow: 1;
+    padding: 2.5%;
+    padding-top: 15px;
+    margin: 2.5%;
+    height: 100%;
+    min-height: 200px;
+    max-width: 700px;
+    /*max-height: 400px;*/
+    /*overflow-y: auto;*/
+    white-space: pre-wrap; /* Ensures text wraps properly */
+    /*outline: none;*/
+    font-size: 14px;
+    color: #d4d4d4;
+    background: #1e1e1e;
+    display: block; /* Ensures it behaves like a block element */
+    border: white solid 3px;
+    border-radius: 15px;
+
+}
+
+.form-comment{
+    color: green;
+    display: inline;
+}
+
+
+.move-buttons {
+    display: inline;
+    margin-top: 5px;
+  }
+  
+  .insert-button {
+    text-align: center;
+    margin: 5px 0;
+  }
+  
+  .insert-button button {
+    background-color: #f1f1f1;
+    border: 1px dashed #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  .display-inline {
+    display: inline;
+  }
+
+
+
+  .drag-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .form-row {
+    display: inline;
+    align-items: center;
+  }
+
+  .form-item {
+    width: 100%;
+    padding: 5px;
+    /*display: inline;*/
+    align-items: center;
+    border: 1px solid #ccc;
+    transition: background 0.2s;
+    position: relative;
+  }
+  
+  .move-buttons {
+    display: inline;
+    position: absolute;
+    right: 10px;
+    display: none;  /* Hidden initially */
+  }
+
+  .form-item:hover {
+    background-color: #2b2a2a;
+  }
+  
+  .move-buttons {
+    display: inline;  /* Show on hover */
+  }
+  
+  .drag-handle {
+    display: inline;
+    cursor: grab;
+    margin-right: 10px;
+    background-color: #2b2a2a;
+  }
+
+  .insert-area {
+    height: 3px;
+    text-align: center;
+    position: relative;
+  }
+  
+  .insert-area button {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff0000;
+    border: 1px dashed #aaa;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .move-buttons {
+    display: none;
+    margin-left: auto;
+  }
+  
+  .form-item:hover .move-buttons {
+    display: inline;
+    gap: 5px;
+  }
+  
+  .move-buttons button {
+    border: none;
+    background: #121212;
+    /* padding: 2px 6px;*/
+    cursor: pointer;
+  }
+
+  .move-buttons {
+    height: 100%;
+    margin-top: 0;
+  }
+
+  .form-option-button {
+    height: 20px;
+  }
+  
+  .delete-btn {
+    background: #ff5c5c !important;
+    color: white;
+  }
