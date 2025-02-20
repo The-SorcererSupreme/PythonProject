@@ -1,6 +1,8 @@
 # /services/yaml_service.py
 import yaml
+import re
 import logging
+import json
 from flask import jsonify
 
 ALLOWED_FILE_EXTENSIONS = ['.yml', '.yaml']
@@ -146,3 +148,126 @@ def convert_yaml_to_json_array(data, path):
 
     except Exception as e:
         return {"content": f"Error: Failed to parse YAML due to {str(e)}", "success": False}
+
+def convert_json_array_to_yaml(json_data):
+    """
+    Converts structured JSON data (with lists/dictionaries) into a YAML-formatted string,
+    while maintaining the correct nesting structure.
+    """
+    try:
+        json_array = json.loads(json_data)
+
+        yaml_dict = {}
+        
+        for item in json_array:
+            name = item.get("name")
+            value = item.get("value")
+            item_type = item.get("type")
+
+            if item_type == "empty":
+                continue  # Ignore empty lines in the YAML output
+            elif item_type == "list":
+                yaml_dict[name] = []  # Initialize empty list
+            elif item_type == "dict":
+                yaml_dict[name] = {}  # Initialize empty dictionary
+            else:
+                yaml_dict[name] = value  # Assign standard values
+            
+            # Handle nested structures
+            if "fields" in item and isinstance(item["fields"], list):
+                if isinstance(yaml_dict[name], list):  # For lists (e.g., "flags", "tags")
+                    for sub_item in item["fields"]:
+                        sub_name = sub_item.get("name")
+                        sub_value = sub_item.get("value")
+                        
+                        if isinstance(sub_value, list):
+                            yaml_dict[name].append(sub_value)  # Preserve nested lists
+                        elif isinstance(sub_value, dict):
+                            yaml_dict[name].append({sub_name: sub_value})  # Nested dicts inside lists
+                        else:
+                            yaml_dict[name].append(sub_value)  # Append standard values to lists
+                else:  # For dictionaries
+                    for sub_item in item["fields"]:
+                        sub_name = sub_item.get("name")
+                        sub_value = sub_item.get("value")
+                        yaml_dict[name][sub_name] = sub_value
+
+        # Convert to properly formatted YAML
+        raw_yaml_content = yaml.dump(yaml_dict, default_flow_style=False, sort_keys=False, allow_unicode=True)
+
+        # Wrap the response for the frontend
+        response = {
+            "content": raw_yaml_content,
+            "format": "yaml"
+        }
+
+        return raw_yaml_content  # Return JSON object
+
+    except Exception as e:
+        print(f"Error converting JSON to YAML: {e}")
+        return json.dumps({"error": str(e)})
+
+def flatten_json(data):
+    """
+    Flattens a nested JSON structure by moving all 'fields' items to the root list.
+    """
+    flat_list = []
+
+    def extract_fields(item):
+        flat_list.append(item)  # Add current item to the flattened list
+
+        # Recursively add nested fields
+        if "fields" in item and isinstance(item["fields"], list):
+            for sub_item in item["fields"]:
+                extract_fields(sub_item)  # Add subfields to flat list
+            del item["fields"]  # Remove 'fields' key after flattening
+
+    for entry in data:
+        extract_fields(entry)
+
+    return flat_list
+
+def normalize_line_numbers(json_data):
+    """
+    Ensures line numbers are continuous and corrects any missing ones.
+    Handles nested lists and dictionaries.
+    """
+    line_counter = 1  # Start numbering from 1
+
+    def assign_line_numbers(data):
+        nonlocal line_counter
+        for item in data:
+            if "line_num" in item:
+                print(f"Updating {item['line_num']} to {line_counter}")
+                item["line_num"] = line_counter  # Assign new line number
+                line_counter += 1
+
+            # If it's a list or dictionary, recursively update its fields
+            if "fields" in item and isinstance(item["fields"], list):
+                assign_line_numbers(item["fields"])
+
+    print(f"Reassigning numbers for: {json_data}")
+    assign_line_numbers(json_data)
+    return json_data
+
+
+
+def process_list(item):
+    """
+    Handles list-type entries, ensuring correct formatting.
+    """
+    if "fields" in item:
+        return [process_dict(field) for field in item["fields"]]
+    return []
+
+
+def process_dict(item):
+    """
+    Handles dictionary-type entries and converts them to nested YAML structures.
+    """
+    if "fields" in item:
+        nested_dict = {}
+        for field in item["fields"]:
+            nested_dict[field["name"]] = field["value"]
+        return nested_dict
+    return {}

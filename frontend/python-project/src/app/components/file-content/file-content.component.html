@@ -22,7 +22,15 @@
   <h3>Edit File Content:</h3>
   <div class="editor-wrapper">
     <div class="line-numbers" #lineNumbers></div>
-    <textarea class="editor" contenteditable="true" [(ngModel)]="fileContent" (input)="updateLineNumbers()" (input)="onEditorInput()" (scroll)="syncScroll()" #editor></textarea>
+    <textarea
+    class="editor"
+    contenteditable="true"
+    [(ngModel)]="fileContent"
+    (input)="updateLineNumbers()"
+    (input)="onEditorInput()"
+    (scroll)="syncScroll()"
+    #editor
+    (focus)="editingMode = 'raw'"></textarea>
   </div>
 </div>
 
@@ -41,5 +49,5 @@
 
 <div *ngIf="yamlData && yamlData.length > 0">
   
-  <code-form-component [yamlStructure]="yamlData"></code-form-component>
+  <code-form-component [yamlStructure]="yamlData" (editingModeChange)="onEditingModeChange($event)"></code-form-component>
 </div>

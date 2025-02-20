@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { format } from 'path';
 
 
 @Component({
@@ -35,6 +36,7 @@ export class FileContentComponent implements OnChanges, AfterViewInit {
   fileContent: any = null;
   errorMessage: string | null = null;
   pathParts: string[] = [];
+  editingMode: string = 'raw'; // Default to raw content
 
   @ViewChild('editor', { static: false }) editor!: ElementRef;
   @ViewChild('lineNumbers', { static: false }) lineNumbers!: ElementRef;
@@ -173,31 +175,60 @@ export class FileContentComponent implements OnChanges, AfterViewInit {
       this.errorMessage = 'File path or container ID is missing.';
       return;
     }
-  
-    // Get the content from the editor
-    const updatedContent = this.editor.nativeElement.value;
-    console.log("Content to save: " + updatedContent)
-  
-    // Call the backend API to save the content
-    this.folderService.saveFileContent(this.filePath, this.selectedContainerId, updatedContent).subscribe({
-      next: (response: any) => {
-        const responseData = Array.isArray(response) ? response[0] : response;
-        if (responseData.success) {
-          console.log('File saved successfully!');
-          this.fileContentChange.emit(updatedContent); // Emit the new content to notify parent component
-          this.showNotification('File saved successfully!', 'success');
-        } else {
-          console.error('Save error:', responseData.error);
-          this.errorMessage = 'Failed to save file content: ' + responseData.error;
-          this.showNotification('Failed to save file', 'error');
-        }
-      },
-      error: (err) => {
-        console.error('Error saving file content:', err);
-        this.errorMessage = 'Failed to save file content: ' + (err.message || 'Unknown error');
-        this.showNotification('Failed to save file content', 'error');
-      },
-    });
+    console.log("Editing in : " + this.editingMode)
+    
+    if (this.editingMode === 'yaml') {
+      const updatedContent = this.yamlData;
+      console.log("Content to save: " + updatedContent)
+      // Call the backend API to save the content
+      this.folderService.saveFileContent(this.filePath, this.selectedContainerId, updatedContent, this.editingMode).subscribe({
+        next: (response: any) => {
+          const responseData = Array.isArray(response) ? response[0] : response;
+          if (responseData.success) {
+            console.log('File saved successfully!');
+            this.fileContentChange.emit(updatedContent); // Emit the new content to notify parent component
+            this.showNotification('File saved successfully!', 'success');
+          } else {
+            console.error('Save error:', responseData.error);
+            this.errorMessage = 'Failed to save file content: ' + responseData.error;
+            this.showNotification('Failed to save file', 'error');
+          }
+        },
+        error: (err) => {
+          console.error('Error saving file content:', err);
+          this.errorMessage = 'Failed to save file content: ' + (err.message || 'Unknown error');
+          this.showNotification('Failed to save file content', 'error');
+        },
+      });
+    } else if (this.editingMode === 'raw') {
+      const updatedContent = this.editor.nativeElement.value;
+      console.log("Content to save: " + updatedContent)
+      // Call the backend API to save the content
+      this.folderService.saveFileContent(this.filePath, this.selectedContainerId, updatedContent).subscribe({
+        next: (response: any) => {
+          const responseData = Array.isArray(response) ? response[0] : response;
+          if (responseData.success) {
+            console.log('File saved successfully!');
+            this.fileContentChange.emit(updatedContent); // Emit the new content to notify parent component
+            this.showNotification('File saved successfully!', 'success');
+          } else {
+            console.error('Save error:', responseData.error);
+            this.errorMessage = 'Failed to save file content: ' + responseData.error;
+            this.showNotification('Failed to save file', 'error');
+          }
+        },
+        error: (err) => {
+          console.error('Error saving file content:', err);
+          this.errorMessage = 'Failed to save file content: ' + (err.message || 'Unknown error');
+          this.showNotification('Failed to save file content', 'error');
+        },
+      });
+    }
+  }
+
+  onEditingModeChange(mode: string) {
+    this.editingMode = mode; // ✅ Update editing mode dynamically
+    console.log("Editing mode switched to:", this.editingMode);
   }
 
   private showNotification(message: string, type: 'success' | 'error') {

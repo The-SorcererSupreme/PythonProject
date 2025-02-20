@@ -37,10 +37,17 @@ export class FolderService {
       this.http.get(url, { headers })
     ));
   }
-  saveFileContent(path: string, container_id: string, content: string): Observable<any> {
+  saveFileContent(path: string, container_id: string, content: string, format: 'raw' | 'yaml' = 'raw' /* Default to 'raw'*/): Observable<any> {
+    console.log('Recieved content: ' + content)
     const url = `${this.baseUrl}/saveFile?containerID=${encodeURIComponent(container_id)}&path=${encodeURIComponent(path)}`; // The actual API endpoint for saving the file
+    // Convert YAML content to string if necessary
+    if (format === 'yaml' && typeof content !== 'string') {
+      content = JSON.stringify(content, null, 2); // Convert YAML object to formatted string
+      console.log('Sending content: ' + content)
+    }
     const body = {
       content,
+      format
     };
     // Get the token from local storage or any other storage mechanism you use
     const token = localStorage.getItem('auth_token');  // Replace with your token storage method
@@ -50,7 +57,7 @@ export class FolderService {
       'Authorization': `Bearer ${token}`,
     };
 
-    console.log('Requesting URL:', url);
+    console.log(`Saving file as ${format}:`, url);
     return this.http.post<any>(url, body, { headers });
   }
 }

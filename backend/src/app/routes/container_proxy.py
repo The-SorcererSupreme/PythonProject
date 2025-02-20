@@ -73,6 +73,7 @@ def forward_request_to_container(endpoint, path, container_id, content=None):
     Returns:
         Flask Response: The container's response, rewrapped in a Flask response object.
     """
+    print(f"--------------CONTENT IS: {content}")
     if not container_id:
         return jsonify({"error": "Container ID is required"}), 400
     # Fetch the correct container's IP dynamically
@@ -108,8 +109,23 @@ def forward_request_to_container(endpoint, path, container_id, content=None):
                 return content_data, {'success' : True}
         elif request.method == "POST":
             method = "POST"
-            # Forward POST request with JSON data
-            container_response = requests.post(url, json=request.json)
+            print(f"Received {method} request with body: {request.json}")
+            # 🚀 **Ensure content is correctly extracted**
+            if content:
+                print(f"Content passed explicitly: {content}")
+                # 🚀 **Wrap the content in a proper JSON structure**
+                payload = {"content": content}
+            elif "content" in request.json:
+                print(f"Content from request: {json.dumps(request.json['content'], indent=2)}")
+            else:
+                print("No content found in request.")
+
+
+            # Forward POST request with updated JSON data
+            container_response = requests.post(url, json=payload)
+            # container_response = requests.post(url, json=request.json)
+
+
             json_content = container_response.text
             logging.info(f"{method} - Raw container response: {json_content}")  
             content_data = json.loads(json_content)

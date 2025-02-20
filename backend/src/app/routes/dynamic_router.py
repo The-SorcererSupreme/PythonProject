@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, redirect, url_for
 from app.routes.container_proxy import forward_request_to_container  # Import the forward_request_to_container function
+from app.services.yaml_service import convert_json_array_to_yaml
 
 dynamic_router = Blueprint("dynamic_router", __name__)
 
@@ -96,7 +97,9 @@ def handle_save_file():
     endpoint = request.path
     file_path = request.args.get("path")  # File path as a query parameter
     container_id = request.args.get("containerID")  # Container ID as a query parameter
+    format_type = request.json.get("format") # Get the format of the file/request
     content = request.json.get("content")  # File content from the request body
+
     if not file_path:
         return jsonify({"error": "File path is required"}), 400
     if not container_id:
@@ -106,6 +109,12 @@ def handle_save_file():
 
     # Handle the logic to save the file content.
     try:
+        print(f"Format type: {format_type}")
+        # Convert JSON to YAML if format is YAML
+        if format_type == "yaml":
+            print("Converting JSON to YAML...")
+            content = convert_json_array_to_yaml(content)  # Convert JSON to YAML string
+            print(f"Converted json array to file: {content}")
         # Call the function that saves the file
         save_response = forward_request_to_container(endpoint, file_path, container_id, content)
         print(f"Save response: {save_response}")
