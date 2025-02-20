@@ -112,9 +112,9 @@ def handle_save_file():
         print(f"Format type: {format_type}")
         # Convert JSON to YAML if format is YAML
         if format_type == "yaml":
-            print("Converting JSON to YAML...")
+            #print(f"Converting JSON: {content}")
             content = convert_json_array_to_yaml(content)  # Convert JSON to YAML string
-            print(f"Converted json array to file: {content}")
+            print(f"Converted json array to file: \n{content}")
         # Call the function that saves the file
         save_response = forward_request_to_container(endpoint, file_path, container_id, content)
         print(f"Save response: {save_response}")

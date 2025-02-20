@@ -150,59 +150,96 @@ def convert_yaml_to_json_array(data, path):
         return {"content": f"Error: Failed to parse YAML due to {str(e)}", "success": False}
 
 def convert_json_array_to_yaml(json_data):
-    """
-    Converts structured JSON data (with lists/dictionaries) into a YAML-formatted string,
-    while maintaining the correct nesting structure.
-    """
     try:
         json_array = json.loads(json_data)
-
-        yaml_dict = {}
+        yaml_output = []
         
+        def log_processing(item, output_line_num, parent=None):
+            """Prints debugging info about the item being processed."""
+            print(f"Processing Item: {item}")
+            print(f"  - Type: {item.get('type')}")
+            print(f"  - Name: {item.get('name')}")
+            print(f"  - Value: {item.get('value')}")
+            print(f"  - Detected Line Number: {item.get('line_num')}")
+            print(f"  - Placed in YAML Line: {output_line_num}")
+            if parent:
+                print(f"  - Parent: {parent.get('name')} (Line {parent.get('line_num')})")
+            print("-" * 50)
+
+        def wrap_string(value):
+            """Ensures the string value is wrapped with quotes."""
+            # If the string contains double quotes, wrap in single quotes
+            if '"' in value:
+                return f"'{value}'"
+            # If the string contains single quotes, wrap in double quotes
+            elif "'" in value:
+                return f'"{value}"'
+            else:
+                return f'"{value}"'  # Default case, wrap in double quotes
+
         for item in json_array:
+            line_num = item.get("line_num")
             name = item.get("name")
             value = item.get("value")
             item_type = item.get("type")
+            output_line_num = len(yaml_output) + 1  
 
-            if item_type == "empty":
-                continue  # Ignore empty lines in the YAML output
-            elif item_type == "list":
-                yaml_dict[name] = []  # Initialize empty list
-            elif item_type == "dict":
-                yaml_dict[name] = {}  # Initialize empty dictionary
-            else:
-                yaml_dict[name] = value  # Assign standard values
+            log_processing(item, output_line_num)
+
+            # Process comments
+            if item_type == "comment":
+                yaml_output.append(f"{value.strip()}")
+                continue
             
-            # Handle nested structures
-            if "fields" in item and isinstance(item["fields"], list):
-                if isinstance(yaml_dict[name], list):  # For lists (e.g., "flags", "tags")
-                    for sub_item in item["fields"]:
-                        sub_name = sub_item.get("name")
-                        sub_value = sub_item.get("value")
-                        
-                        if isinstance(sub_value, list):
-                            yaml_dict[name].append(sub_value)  # Preserve nested lists
-                        elif isinstance(sub_value, dict):
-                            yaml_dict[name].append({sub_name: sub_value})  # Nested dicts inside lists
-                        else:
-                            yaml_dict[name].append(sub_value)  # Append standard values to lists
-                else:  # For dictionaries
-                    for sub_item in item["fields"]:
-                        sub_name = sub_item.get("name")
-                        sub_value = sub_item.get("value")
-                        yaml_dict[name][sub_name] = sub_value
+            # Process empty lines
+            if item_type == "empty":
+                yaml_output.append("")
+                continue
+            
+            # Process strings and integers
+            if item_type in ["str", "int"]:
+                # Wrap string values in quotes
+                if item_type == "str":
+                    value = wrap_string(value)
+                yaml_output.append(f"{name}: {value}")
+                continue
+            
+            # Process lists
+            if item_type == "list":
+                yaml_output.append(f"{name}:")
+                list_items = item.get("fields", [])
 
-        # Convert to properly formatted YAML
-        raw_yaml_content = yaml.dump(yaml_dict, default_flow_style=False, sort_keys=False, allow_unicode=True)
+                for sub_item in list_items:
+                    log_processing(sub_item, len(yaml_output) + 1, item)
+                    
+                    sub_name = sub_item.get("name")
+                    sub_value = sub_item.get("value")
+                    sub_type = sub_item.get("type")
 
-        # Wrap the response for the frontend
-        response = {
-            "content": raw_yaml_content,
-            "format": "yaml"
-        }
+                    # If it's a complex list (dict inside a list)
+                    if re.match(r".*\[\d+\]$", sub_name) and sub_type == "dict":
+                        sub_fields = sub_item.get("fields", [])
+                        if sub_fields:
+                            first_field = sub_fields[0]
+                            yaml_output.append(f"  - {first_field.get('name')}: {first_field.get('value')}")
+                            for sub_field in sub_fields[1:]:
+                                yaml_output.append(f"    {sub_field.get('name')}: {sub_field.get('value')}")
+                    else:
+                        # Wrap value in quotes for strings
+                        if sub_type == "str":
+                            sub_value = wrap_string(sub_value)
+                        yaml_output.append(f"  - {sub_value}")
+                continue
+            
+            # Process dictionaries
+            if item_type == "dict":
+                yaml_output.append(f"{name}:")
+                for sub_item in item.get("fields", []):
+                    log_processing(sub_item, len(yaml_output) + 1, item)
+                    yaml_output.append(f"  {sub_item.get('name')}: {sub_item.get('value')}")
 
-        return raw_yaml_content  # Return JSON object
-
+        return "\n".join(yaml_output)
+    
     except Exception as e:
         print(f"Error converting JSON to YAML: {e}")
         return json.dumps({"error": str(e)})
