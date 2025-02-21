@@ -1,4 +1,7 @@
 .menu-bar {
+    position: fixed;
+    width: -webkit-fill-available;
+    z-index: 10000;
     display: flex;
     justify-content: space-between;
     align-items: center;
