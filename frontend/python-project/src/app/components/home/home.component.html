@@ -1,1 +1,13 @@
-<p>home works!</p>
+<as-split *ngIf="authService.isLoggedIn()" direction="horizontal" class="split-container">
+  
+    <!-- Sidebar (Treeview) Section -->
+    <as-split-area [size]="15" class="left-area">
+      <app-file-environment (fileSelected)="onFileSelected($event)"></app-file-environment>
+    </as-split-area>
+  
+    <!-- Main Content Area -->
+    <as-split-area [size]="85" class="right-area">
+  
+      <app-file-content [filePath]="selectedFilePath" [selectedContainerId]="selectedContainerId"></app-file-content>
+    </as-split-area>
+</as-split>

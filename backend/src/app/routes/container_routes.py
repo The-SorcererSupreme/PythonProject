@@ -2,6 +2,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from app.classes.database_actions import Database
 from functools import wraps
+from app.classes.container_actions import DockerClientManager
 from app.utils.auth import token_required  # Import the decorator
 
 
@@ -22,10 +23,30 @@ def get_user_containers(session_id):
         if session_id:
             query = "SELECT user_id FROM sessions WHERE id = %s"
             user_id = db.fetch_query(query, (session_id,))
-        print(f"Fetching containers from user_id: {user_id[0]['user_id']}")
-        #user_id = request.user.get('user_id')  # Get the user ID from the token
+            user_id = user_id[0]['user_id']
+        print(f"Fetching containers from user_id: {user_id}")
+        
         query = "SELECT * FROM containers WHERE user_id = %s"
-        containers = db.fetch_query(query, (user_id[0]['user_id'],))
+        containers = db.fetch_query(query, (user_id,))
+
+        # Initialize Docker client manager to fetch exsisting containers
+        docker_manager = DockerClientManager()
+        valid_containers = []
+
+        for container in containers:
+            try:
+                container_id = container['container_id']
+                print(f"Checking if container {container_id} exsists...")
+                docker_manager.get_container(container_id)
+                valid_containers.append(container)  # Keep the valid container
+                print("It exsists!")
+            except RuntimeError:
+                # Container does not exist, delete it from the database
+                print("It does not! Deleting from database...")
+                query  = "DELETE FROM containers WHERE container_id = %s AND user_id = %s"
+                db.execute_query(query, (container_id, user_id))
+                print("Deleted container!")
+        
         return jsonify({
             'message': 'Containers fetched successfully',
             'containers': containers

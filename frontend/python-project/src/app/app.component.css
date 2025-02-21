@@ -18,3 +18,11 @@
     flex-direction: column; /* Ensure the layout is vertical */
     height: 100vh; /* Take up full viewport height */
   }
+
+  app-header {
+    width: 100%;
+  }
+
+ .primary{
+  position: fixed;
+ }

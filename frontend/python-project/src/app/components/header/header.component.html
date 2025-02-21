@@ -1,3 +1,26 @@
-<nav>
-    <button *ngIf="authService.isLoggedIn()" (click)="logout()">Logout</button>
-</nav>
+<nav class="main-header">
+    <div *ngIf="authService.isLoggedIn()">
+      <button mat-icon-button>
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>Show folders</span>
+    </div>
+    <span class="spacer"></span>
+  
+    <!-- Show these buttons when the user is logged in -->
+    <div class="menu-points" *ngIf="authService.isLoggedIn(); else showLogin">
+      <button mat-button routerLink="/" [ngClass]="{'active-button': isActive('/')}">Dashboard</button>
+      <button mat-button routerLink="/mngContainers" [ngClass]="{'active-button': isActive('/mngContainers')}">
+        Manage Containers
+      </button>
+      <button mat-button routerLink="/settings" [ngClass]="{'active-button': isActive('/settings')}">Settings</button>
+      <button mat-button (click)="logout()" class="active-button red-button">Logout</button>
+    </div>
+  
+    <!-- Show Login/Register when the user is NOT logged in -->
+    <ng-template #showLogin>
+      <button mat-button routerLink="/auth/login" [ngClass]="{'active-button': isActive('/auth/login')}">Login</button>
+      <button mat-button routerLink="/auth/register" [ngClass]="{'active-button': isActive('/auth/register')}">Register</button>
+    </ng-template>
+  </nav>
+  

@@ -52,6 +52,7 @@ class Database:
 
     def delete_query(self, query, params=None):
         """Execute a DELETE query and return the deleted row (if any)."""
+        print(f"{query} with {params}")
         connection = self.connect()
         cursor = connection.cursor()
         cursor.execute(query, params or ())

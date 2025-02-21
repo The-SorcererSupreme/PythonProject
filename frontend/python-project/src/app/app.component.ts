@@ -18,7 +18,6 @@ import { FileEnvironmentComponent } from './components/file-environment/file-env
 import { FileContentComponent } from './components/file-content/file-content.component';
 import { DynamicYamlFormComponent} from './components/code-form/code-form.component';
 import { HeaderComponent } from './components/header/header.component';
-import { AuthService } from './services/auth.service';
 @Component({
     selector: 'app-root',
     standalone: true,
@@ -47,27 +46,14 @@ import { AuthService } from './services/auth.service';
     styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  //loading: boolean = false; // Indicates whether data is being loaded
-  //nodes: TreeNode[] = []; // Tree structure for <p-tree>
-  //selectedNode: TreeNode | null = null; // Selected node
-  //currentPath: string = ''; // Keeps track of the current folder path
-  //fileContent: string | null = null; // Content of the selected file
 
   //constructor(private folderService: FolderService, private http: HttpClient) {}
-  constructor(public authService: AuthService) {}
+  //constructor(public authService: AuthService) {}
 
-  selectedFilePath: string | null = null; // Store the selected file path
-  selectedContainerId: string | null = null;
+  
 
-  onFileSelected(data: { filePath: string, containerId: string }) {
-    console.log('File path received in AppComponent:', data.filePath);
-    console.log('ContainerID received in AppComponent:', data.containerId);
-    this.selectedFilePath = data.filePath; // Update the selected file path
-    this.selectedContainerId = data.containerId; // Set the container ID
-  }
-
-  // Toggles the side navigation menu
+  /* Toggles the side navigation menu
   toggleSidenav(sidenav: any) {
     sidenav.toggle();
-  }
+  }*/
 }

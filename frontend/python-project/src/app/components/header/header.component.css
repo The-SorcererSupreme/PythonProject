@@ -1,0 +1,22 @@
+.menu-points {
+    display: inline;
+}
+
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: anchor-center;
+}
+
+.active-button{
+    display: inline-flex;
+    cursor: pointer;
+    user-select: none;
+    align-items: center;
+    justify-content: center;
+    background-color: #34d399;
+}
+
+.red-button {
+    background-color: #d33434;
+}

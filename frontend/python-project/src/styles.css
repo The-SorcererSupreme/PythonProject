@@ -157,3 +157,10 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .as-split-gutter-icon {
   background-color: #51316f;
 }
+
+
+app-root {
+  display: flow-root;
+  height: 100%;
+  overflow: hidden;
+}
