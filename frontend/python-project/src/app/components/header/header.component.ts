@@ -29,6 +29,8 @@ export class HeaderComponent {
 
   logout() {
     this.authService.logout();
+    localStorage.removeItem('selectedContainerId');
+    localStorage.removeItem('folderStructure');
     this.cdRef.detectChanges();
   }
 

@@ -10,10 +10,10 @@
   <div *ngIf="containers.length > 0">
     <div>
         <label for="containerSelect">Select Container:</label>
-        <select id="containerSelect" (change)="onSelectContainer($event)">
-          <option value="" disabled selected>Select a container</option>
+        <select id="containerSelect" (change)="onSelectContainer($event)" [(ngModel)]="selectedContainerId">
+          <option value="" disabled *ngIf="!selectedContainerId">Select a container</option>
           <option *ngFor="let container of containers" [value]="container.id">
-            {{ container.id }} <!-- Replace with container.name -->
+            {{ container.container_name }} <!-- Replace with container.name if needed -->
           </option>
         </select>
       </div>

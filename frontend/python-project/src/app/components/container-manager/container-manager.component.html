@@ -1,1 +1,46 @@
-<p>container-manager works!</p>
+<div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+  
+  <div *ngIf="containers.length === 0 && !errorMessage" class="no-containers-message">
+    No containers available.
+  </div>
+  
+  <div *ngIf="containers.length > 0">
+    <h2>Manage Containers</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let container of containers">
+            <td >
+            <span (click)="editContainerName(container.id)" *ngIf="editingContainerId !== container.id">
+              {{ container.container_name }}
+            </span>
+            <input
+              *ngIf="editingContainerId === container.id"
+              [value]="container.container_name"
+              (blur)="onContainerNameBlur($event, container)"
+              (keyup.enter)="onContainerNameBlur($event, container)"
+              autofocus
+            />
+          </td>
+          <td>
+            <button *ngIf="container.status !== 'running'" (click)="startContainer(container.id)">Start</button>
+            <button *ngIf="container.status === 'running'" (click)="stopContainer(container.id)" [disabled]="loadingContainerId === container.id">
+                {{ loadingContainerId === container.id ? 'Stopping...' : 'Stop' }}
+            </button>
+            <button class="delete-btn" (click)="deleteContainer(container, container.status === 'running')" [disabled]="container.status === 'running'">
+                Delete
+            </button>
+            <button (click)="shareAccess(container.id)">Manage access</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  

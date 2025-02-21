@@ -24,7 +24,7 @@ export class HomeComponent {
     constructor(public authService: AuthService) {}
 
     selectedFilePath: string | null = null; // Store the selected file path
-  selectedContainerId: string | null = null;
+    selectedContainerId: string | null = null;
 
   onFileSelected(data: { filePath: string, containerId: string }) {
     console.log('File path received in AppComponent:', data.filePath);

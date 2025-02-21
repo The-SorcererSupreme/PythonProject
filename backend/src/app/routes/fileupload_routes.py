@@ -37,6 +37,7 @@ def upload_file_route(user_session):
             return jsonify({
                 'message': 'File uploaded and processed successfully',
                 'container_id': container_response['container_id'],
+                'container_name' : container_response['container_name'],
                 'container_status': container_response['status'],
                 'file_structure': container_response['file_structure']
             }), 200

@@ -1,6 +1,7 @@
 // src/app/components/containers/containers.component.ts
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { ContainerService } from '../../services/get-containers.service';
+import { FormsModule } from '@angular/forms';
 import { NgIf, NgFor } from '@angular/common';
 
 @Component({
@@ -8,7 +9,10 @@ import { NgIf, NgFor } from '@angular/common';
   standalone: true,
   templateUrl: './containers.component.html',
   styleUrls: ['./containers.component.css'],
-  imports: [NgIf, NgFor],
+  imports: [
+    NgIf,
+    NgFor,
+    FormsModule],
 })
 export class ContainersComponent implements OnInit {
   @Output() containerSelected = new EventEmitter<string>(); // Emit selected container ID
@@ -21,7 +25,17 @@ export class ContainersComponent implements OnInit {
   constructor(private containerService: ContainerService,) { }
 
   ngOnInit(): void {
-    this.fetchContainers();  // Call fetchContainers when the component is loaded
+    // Get all available containers
+    this.fetchContainers();  
+  
+    // Retrieve the last selected container from localStorage
+    const savedContainerId = localStorage.getItem('selectedContainerId');
+    if (savedContainerId) {
+      this.selectedContainerId = savedContainerId;
+      
+      // Emit the value so the parent component updates accordingly
+      this.containerSelected.emit(this.selectedContainerId);
+    }
   }
 
   fetchContainers(): void {
@@ -29,6 +43,13 @@ export class ContainersComponent implements OnInit {
       (response) => {
         this.containers = response.containers;
         this.errorMessage = null;
+  
+        // Check if containers length is 0 and clear the folderStructure from localStorage
+        if (this.containers.length === 0) {
+          localStorage.removeItem('folderStructure');
+          localStorage.removeItem('selectedContainerId');
+          console.log('Cleared folderStructure from localStorage because no containers are available.');
+        }
       },
       (error) => {
         this.errorMessage = 'Error fetching containers. Please try again later.';
@@ -36,9 +57,20 @@ export class ContainersComponent implements OnInit {
       }
     );
   }
+
   onSelectContainer(event: any) {
     this.selectedContainerId = event.target.value;
     console.log('Selected container:', this.selectedContainerId);
-    this.containerSelected.emit(this.selectedContainerId); // Emit selection
+    
+    // Store in localStorage
+    localStorage.setItem('selectedContainerId', this.selectedContainerId);
+  
+    // Emit selection
+    this.containerSelected.emit(this.selectedContainerId);
+  }
+
+  // Method to refresh the container list
+  refreshContainers() {
+    this.fetchContainers();  // Re-fetch the containers
   }
 }

@@ -31,4 +31,74 @@ export class ContainerService {
     // Now, you can make the request with the headers (which will be empty if not in the browser)
     return this.http.get(this.apiUrl, { headers });
   }
+
+  updateContainerName(containerId: string, newName: string): Observable<any> {
+    let headers = new HttpHeaders();
+  
+    if (isPlatformBrowser(this.platformId)) {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+      }
+    }
+  
+    return this.http.put(`${this.apiUrl}/update-name`, { id: containerId, name: newName }, { headers });
+  }
+
+    // Function to start a container
+    startContainer(containerId: string): Observable<any> {
+      let headers = new HttpHeaders();
+  
+      if (isPlatformBrowser(this.platformId)) {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          headers = headers.set('Authorization', `Bearer ${token}`);
+        }
+      }
+  
+      return this.http.post(`${this.apiUrl}/start`, { containerId }, { headers });
+    }
+  
+    // Function to stop a container
+    stopContainer(containerId: string): Observable<any> {
+      let headers = new HttpHeaders();
+  
+      if (isPlatformBrowser(this.platformId)) {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          headers = headers.set('Authorization', `Bearer ${token}`);
+        }
+      }
+  
+      return this.http.post(`${this.apiUrl}/stop`, { containerId }, { headers });
+    }
+  
+    deleteContainer(containerId: string): Observable<any> {
+      let headers = new HttpHeaders();
+    
+      if (isPlatformBrowser(this.platformId)) {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          headers = headers.set('Authorization', `Bearer ${token}`);
+        }
+      }
+    
+      // Send the containerId in the body of the POST request
+      return this.http.post(`${this.apiUrl}/delete`, { containerId }, { headers });
+    }
+
+      // Get users with access to a container
+  getContainerAccess(containerId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/access?containerId=${containerId}`);
+  }
+
+  // Share a container with a new user
+  shareContainer(containerId: string, username: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/share`, { containerId, username });
+  }
+
+  // Revoke access for a user
+  revokeAccess(containerId: string, userId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/revoke`, { containerId, userId });
+  }
 }

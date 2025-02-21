@@ -111,13 +111,16 @@ class DockerService:
             print("File structure:", file_structure)
 
             # Save the container information to the database, linking to the user
-            self.save_container_to_db(user_id, container.id, container_name, 'Up', host_port)
-
+            self.save_container_to_db(user_id, container.id, container_name, 'running', host_port)
+            id_container = self.get_id_by_container_id(container.id)
+            id_container = id_container[0]['id']
+            print(f"Returning container ID: {id_container}")
             # TODO: Return the file structure to the frontend
 
             return {
-                'container_id': container.id,
-                'status': 'Up',
+                'container_id': id_container,
+                'container_name' : container_name,
+                'status': 'running',
                 'file_structure' : file_structure
             }
         except Exception as e:
@@ -126,11 +129,11 @@ class DockerService:
     def save_container_to_db(self, user_id, container_id, container_name, status, host_port):
         """Save container information to the PostgreSQL database."""
         query = """
-        INSERT INTO containers (user_id, container_id, status, host_port)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO containers (user_id, container_id, container_name, status, host_port)
+        VALUES (%s, %s, %s, %s, %s)
         """
         try:
-            self.db.execute_query(query, (user_id, container_id, status, host_port))
+            self.db.execute_query(query, (user_id, container_id, container_name, status, host_port))
             print(f"Container {container_name} saved to database successfully.")
         except Exception as e:
             raise RuntimeError(f"Error saving container to database: {e}")
@@ -144,3 +147,9 @@ class DockerService:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 if s.connect_ex(('localhost', port)) != 0:  # If port is not in use
                     return port
+                
+    def get_id_by_container_id (self, container_id): # Limit to return id or not?
+        print("Getting id for container")
+        id_container = self.db.fetch_query("SELECT * FROM containers WHERE container_id = %s", (container_id,))
+        print(f"ID for container {container_id}: {id_container}")
+        return id_container

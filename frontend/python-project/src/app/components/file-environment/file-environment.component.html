@@ -14,7 +14,7 @@
               loadingIcon="pi pi-spinner"
               [loading]="loading">
             </p-tree>
-            <button (click)="clearFolderStructure()">Clear Sidebar</button>
+            <button (click)="clearFolderStructure()">Create new container</button>
             </div>
       <!-- Show options to connect when no content is loaded -->
       <div *ngIf="!contentLoaded" class="drag-drop-area">
@@ -26,8 +26,8 @@
           </div>-->
           <input type="hidden" name="upload_type" value="drag_and_drop" />
         </ngx-dropzone>
-        <button (click)="connectToGit()">Connect to Git</button>
-        <button (click)="connectViaAgent()">Connect via Agent</button>
+        <!--<button (click)="connectToGit()">Connect to Git</button>
+        <button (click)="connectViaAgent()">Connect via Agent</button>-->
       </div>
 </div>
     

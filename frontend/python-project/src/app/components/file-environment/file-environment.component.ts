@@ -1,5 +1,5 @@
 // /frontend/python-project/src/app/components/file-environment/file-environment.component.ts
-import { Component, OnInit, EventEmitter, Output, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Inject, PLATFORM_ID, ViewChild } from '@angular/core';
 import { FolderService } from '../../services/folder.service';
 import { TreeModule } from 'primeng/tree';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -36,6 +36,7 @@ interface TreeNode {
 
 
 export class FileEnvironmentComponent /*implements OnInit*/ {
+  @ViewChild(ContainersComponent) containersComponent!: ContainersComponent;  // Reference to ContainersComponent
   @Output() fileSelected = new EventEmitter<{ filePath: string, containerId: string }>(); // Emit selected file path
 
   loading: boolean = false; // Indicates whether data is being loaded
@@ -59,6 +60,16 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
   }*/
     ngOnInit() {
       this.loadFolderStructureFromStorage();
+    
+      // Retrieve the last selected container ID
+      if (isPlatformBrowser(this.platformId)) {
+        const savedContainerId = localStorage.getItem('selectedContainerId');
+        if (savedContainerId) {
+          this.selectedContainerId = savedContainerId;
+          this.loadContainerFolderStructure(savedContainerId);
+          console.log("Container ID in storage: " + savedContainerId)
+        }
+      }
     }
   
     loadFolderStructureFromStorage() {
@@ -77,6 +88,10 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
     clearFolderStructure() {
       if (isPlatformBrowser(this.platformId)) {
         localStorage.removeItem('folderStructure');
+        localStorage.removeItem('selectedContainerId');
+        if (this.containersComponent) {
+          this.containersComponent.refreshContainers(); // Refresh the container component
+        }
       }
       this.nodes = [];
       this.contentLoaded = false;
@@ -163,7 +178,8 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
   onContainerSelected(containerId: string) {
     console.log('Received selected container:', containerId);
     if (containerId) {
-      this.selectedContainerId = containerId; // Store it for later use
+      this.selectedContainerId = containerId;
+      localStorage.setItem('selectedContainerId', containerId); // Store in localStorage
       this.loadContainerFolderStructure(containerId);
     }
   }  
@@ -221,10 +237,15 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
         if (response && response.file_structure) {
           this.nodes = this.processFolders(response.file_structure, '');
           localStorage.setItem('folderStructure', JSON.stringify(this.nodes));
-  
+          localStorage.setItem('selectedContainerId', response.containerId);
+
           this.loading = false;
           this.contentLoaded = true;
           console.log('Folder structure received from backend:', this.nodes);
+          // After successful upload, refresh the container list
+          if (this.containersComponent) {
+            this.containersComponent.refreshContainers(); // Refresh the container component
+          }
         }
       },
       error: (error) => {

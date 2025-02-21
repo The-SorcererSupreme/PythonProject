@@ -11,7 +11,13 @@ class RequestRoutingMiddleware:
         self.backend_routes = ["/auth", "/api/upload"]
         self.container_proxy = ["/api/file-structure"]
         self.dynamic_routes = ["/api/getFile", "/api/saveFile"]
-        self.container_routes = ["/api/containers"]  # CHANGE TO backend_routes
+        self.container_routes = [
+            "/api/containers",
+            "/api/containers/update-name",
+            "/api/containers/start",
+            "/api/containers/stop",
+            "/api/containers/delete",
+            ]  # CHANGE TO backend_routes
         print(f"------------------------------")
         print("Request router initiated")
 

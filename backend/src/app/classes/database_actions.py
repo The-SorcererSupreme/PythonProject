@@ -45,8 +45,11 @@ class Database:
         """Fetch query results."""
         connection = self.connect()
         cursor = connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)  # Use RealDictCursor
+        print(f"Executing fetch query {query} with params: {params}")
         cursor.execute(query, params or ())
+        print("Fetch executed!")
         results = cursor.fetchall()
+        print(f"Fetched results: {results}")
         cursor.close()  # Close the cursor after fetching results
         return results
 

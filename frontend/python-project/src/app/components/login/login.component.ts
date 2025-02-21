@@ -26,6 +26,8 @@ export class LoginComponent {
         if (response && response.token) {
           this.authService.saveSession(response.token); // Save session on successful login
           location.href = '/'; // Redirect to home
+          localStorage.removeItem('selectedContainerId');
+          localStorage.removeItem('folderStructure');
           this.router.navigate(['/containers']);
         }
       },
