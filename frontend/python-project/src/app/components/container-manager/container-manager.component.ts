@@ -19,6 +19,9 @@ export class ContainerManagerComponent implements OnInit {
   containers: any[] = [];
   editingContainerId: string | null = null;
   loadingContainerId: string | null = null;
+  selectedContainerId: string | null = null;
+  usersWithAccess: any[] = [];
+  newUsername: string = "";
   errorMessage: string | null = null;
 
   constructor(private containerService: ContainerService, private http: HttpClient) {}
@@ -83,19 +86,6 @@ export class ContainerManagerComponent implements OnInit {
     );
   }
 
-  shareAccess(containerId: string) {
-    const email = prompt('Enter email to share access:');
-    if (!email) return;
-
-    this.http.post(`http://localhost:8000/api/containers/share`, { containerId, email }).subscribe(
-      () => {
-        console.log(`Shared access with ${email}`);
-        alert(`Access shared with ${email}`);
-      },
-      (error) => console.error('Error sharing access:', error)
-    );
-  }
-
   editContainerName(containerId: string) {
     console.log("Editing container: " + containerId)
     this.editingContainerId = containerId;
@@ -126,4 +116,56 @@ export class ContainerManagerComponent implements OnInit {
       this.saveContainerName(container, inputElement.value);
     }
   }
+
+
+    // Toggle the Manage Access section for a specific container
+    toggleManageAccess(containerId: string) {
+      if (this.selectedContainerId === containerId) {
+        this.selectedContainerId = null; // Close the form if it's already open
+      } else {
+        this.selectedContainerId = containerId;
+        this.getContainerAccess(containerId); // Load shared users
+      }
+    }
+  
+    // Fetch users who have access to the container
+    getContainerAccess(containerId: string) {
+      this.containerService.getContainerAccess(containerId).subscribe(
+        (response) => {
+          this.usersWithAccess = response.users_with_access;
+        },
+        (error) => {
+          console.error("Error fetching access info:", error);
+        }
+      );
+    }
+  
+    // Share container with a new user by username
+    shareAccess(containerId: string) {
+      if (!this.newUsername.trim()) return; // Prevent empty submissions
+  
+      this.containerService.shareContainer(containerId, this.newUsername).subscribe(
+        (response) => {
+          console.log(response.message);
+          this.getContainerAccess(containerId); // Refresh shared users list
+          this.newUsername = ""; // Clear input field
+        },
+        (error) => {
+          console.error("Error sharing container access:", error);
+        }
+      );
+    }
+  
+    // Revoke access for a specific user
+    revokeAccess(containerId: string, userId: string) {
+      this.containerService.revokeAccess(containerId, userId).subscribe(
+        (response) => {
+          console.log(response.message);
+          this.getContainerAccess(containerId); // Refresh shared users list
+        },
+        (error) => {
+          console.error("Error revoking container access:", error);
+        }
+      );
+    }
 }

@@ -17,27 +17,46 @@
       </thead>
       <tbody>
         <tr *ngFor="let container of containers">
-            <td >
+          <td>
             <span (click)="editContainerName(container.id)" *ngIf="editingContainerId !== container.id">
               {{ container.container_name }}
             </span>
-            <input
-              *ngIf="editingContainerId === container.id"
-              [value]="container.container_name"
-              (blur)="onContainerNameBlur($event, container)"
-              (keyup.enter)="onContainerNameBlur($event, container)"
-              autofocus
-            />
+            <input *ngIf="editingContainerId === container.id"
+                   [value]="container.container_name"
+                   (blur)="onContainerNameBlur($event, container)"
+                   (keyup.enter)="onContainerNameBlur($event, container)"
+                   autofocus />
           </td>
           <td>
             <button *ngIf="container.status !== 'running'" (click)="startContainer(container.id)">Start</button>
-            <button *ngIf="container.status === 'running'" (click)="stopContainer(container.id)" [disabled]="loadingContainerId === container.id">
-                {{ loadingContainerId === container.id ? 'Stopping...' : 'Stop' }}
+            <button *ngIf="container.status === 'running'" 
+                    (click)="stopContainer(container.id)" 
+                    [disabled]="loadingContainerId === container.id">
+              {{ loadingContainerId === container.id ? 'Stopping...' : 'Stop' }}
             </button>
-            <button class="delete-btn" (click)="deleteContainer(container, container.status === 'running')" [disabled]="container.status === 'running'">
-                Delete
+            <button class="delete-btn"
+                    (click)="deleteContainer(container, container.status === 'running')"
+                    [disabled]="container.status === 'running'">
+              Delete
             </button>
-            <button (click)="shareAccess(container.id)">Manage access</button>
+            <button (click)="toggleManageAccess(container.id)">Manage Access</button>
+        
+            <!-- Manage Access Form (Visible only for selected container) -->
+            <div *ngIf="selectedContainerId === container.id" class="manage-access">
+              <h4>Shared Users</h4>
+              <ul>
+                <li *ngFor="let user of usersWithAccess">
+                  {{ user.username }}
+                  <button (click)="revokeAccess(container.id, user.id)">Revoke</button>
+                </li>
+              </ul>
+        
+              <form (submit)="shareAccess(container.id)">
+                <label for="username">Share with:</label>
+                <input type="text" id="username" [(ngModel)]="newUsername" name="username" required>
+                <button type="submit">Share</button>
+              </form>
+            </div>
           </td>
         </tr>
       </tbody>

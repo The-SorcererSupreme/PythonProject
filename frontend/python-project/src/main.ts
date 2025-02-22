@@ -1,5 +1,3 @@
-/// <reference types="@angular/localize" />
-
 //frontend/python-project/src/main.ts
 
 // Import your standalone AppComponent
