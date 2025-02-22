@@ -1,9 +1,11 @@
 import requests
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_file
+import zipfile
 from urllib.parse import urlencode
 from app.services.yaml_service import convert_yaml_to_json_array
 from app.classes.database_actions import Database
 import logging
+from io import BytesIO
 from pprint import pformat
 import json
 from urllib.request import urlopen
@@ -28,7 +30,7 @@ CONTAINER_BASE_URL = f"{CONTAINER_HOST}:{CONTAINER_PORT}"
 BACKEND_ROUTES = ['/auth']
 
 # Define the container-specific routes
-CONTAINER_ROUTES = ['/api/file-structure', '/api/getFile']
+CONTAINER_ROUTES = ['/api/file-structure', '/api/getFile', '/api/containers/export']
 
 # Create a Blueprint for the proxy
 container_proxy = Blueprint("container_proxy", __name__)
@@ -101,35 +103,64 @@ def forward_request_to_container(endpoint, path, container_id, content=None):
             json_content = container_response.read()
             content_data = json.loads(json_content)
             logging.info(f"{method} - Container responded with: {content_data}")
+        
             if is_allowed_file_extension(path):
-                container_response = convert_yaml_to_json_array(content_data, path)
-                logging.info(f"{method} - Generated json: {container_response}")
-                return container_response
+                # Attempt to convert YAML to JSON
+                generated_json = convert_yaml_to_json_array(content_data, path)
+                logging.info(f"{method} - Generated json: {generated_json}")
+        
+                # Check if the response indicates success or failure
+                if generated_json.get('success') is False:
+                    # If conversion fails, return the original content_data
+                    logging.error(f"YAML to JSON conversion failed: {generated_json.get('content')}")
+                    return content_data  # Return the original content data in case of failure
+                else:
+                    # If conversion is successful, return the generated JSON
+                    return generated_json
             else:
-                return content_data, {'success' : True}
+                # If file extension is not allowed, return the content data
+                return content_data, {'success': True}
         elif request.method == "POST":
             method = "POST"
-            # print(f"Received {method} request with body: {request.json}")
+            print(f"Received {method} request with body: {request.json}")
             # **Ensure content is correctly extracted**
             if content:
-                #print(f"Content passed explicitly: {content}")
+                print(f"Content passed explicitly: {content}")
                 # **Wrap the content in a proper JSON structure**
                 payload = {"content": content}
-            #elif "content" in request.json:
-                #print(f"Content from request: {json.dumps(request.json['content'], indent=2)}")
-            #else:
-                #print("No content found in request.")
+            elif "content" in request.json:
+                print(f"Content from request: {json.dumps(request.json['content'], indent=2)}")
+            else:
+                if "containerId" in request.json:
+                    print("Set payload to 'export'")
+                    payload = "export"
+                else:
+                    print("No content found in request.")
 
 
             # Forward POST request with updated JSON data
             container_response = requests.post(url, json=payload)
             # container_response = requests.post(url, json=request.json)
+            # If it's an export, handle the response differently
+            if payload == "export":
+                # If the container responds with a file (ZIP), handle it appropriately
+                if container_response.status_code == 200:
+                    # Assume the response contains the zip file
+                    return send_file(
+                        BytesIO(container_response.content), 
+                        as_attachment=True, 
+                        mimetype='application/zip', 
+                        download_name='workspace_export.zip'
+                    )
+                else:
+                    # If export fails, return an error message
+                    return jsonify({"error": "Failed to export the container's workspace."}), 500
 
 
             json_content = container_response.text
-            logging.info(f"{method} - Raw container response: {json_content}")  
+            #logging.info(f"{method} - Raw container response: {json_content}")  
             content_data = json.loads(json_content)
-            logging.info(f"{method} - Container response: {content_data}")
+            #logging.info(f"{method} - Container response: {content_data}")
             return container_response.json(), container_response.status_code
         elif request.method == "PUT":
             method = "PUT"
@@ -174,6 +205,7 @@ def is_allowed_file_extension(file_path):
 @token_required
 def proxy_file_structure(user_session):
     print(f"Calling container file structure for user session: {user_session}")
+    print(f"request args: {request.args}")
     if is_container_route(request.path):
         # Get the file path from the request and forward it to the container
         file_path = "/workspace/"  # Workspace path of container
@@ -188,3 +220,23 @@ def proxy_file_structure(user_session):
             return jsonify({"error": "File path is required"}), 400
     else:
         return jsonify({"error": "Invalid request path for container"}), 400
+    
+
+@container_proxy.route('/api/containers/export', methods=['POST'])
+@token_required
+def export_container(user_session):
+        data = request.get_json()
+        print(f"Exporting container file structure for user session: {user_session}")
+        if is_container_route(request.path):
+            # Get the file path from the request and forward it to the container
+            file_path = "/workspace/"  # Workspace path of container
+            container_id = data.get('containerId')  # Extract containerId
+            print(f"containerID: {container_id}")
+            # Verify that the user is the owner of the container (security)
+            if container_id:
+                # Forward the file path correctly with the query string
+                return forward_request_to_container('/api/containers/export', file_path, container_id)
+            else:
+                return jsonify({"error": "File path is required"}), 400
+        else:
+            return jsonify({"error": "Invalid request path for container"}), 400

@@ -9,7 +9,7 @@ class RequestRoutingMiddleware:
     def __init__(self, app):
         self.app = app
         self.backend_routes = ["/auth", "/api/upload"]
-        self.container_proxy = ["/api/file-structure"]
+        self.container_proxy = ["/api/file-structure", "/api/containers/export"]
         self.dynamic_routes = ["/api/getFile", "/api/saveFile"]
         self.container_routes = [
             "/api/containers",

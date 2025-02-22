@@ -39,6 +39,8 @@
                     [disabled]="container.status === 'running'">
               Delete
             </button>
+            <!-- Export Button -->
+            <button (click)="exportContainer(container.id)">Export</button>
             <button (click)="toggleManageAccess(container.id)">Manage Access</button>
         
             <!-- Manage Access Form (Visible only for selected container) -->

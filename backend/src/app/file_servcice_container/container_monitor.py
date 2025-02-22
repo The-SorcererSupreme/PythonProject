@@ -1,7 +1,8 @@
 from watchfiles import watch
 import logging
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
+from io import BytesIO
 from threading import Thread
 import zipfile
 import tarfile
@@ -161,6 +162,40 @@ def save_file():
     except Exception as e:
         logging.error(f"Error saving file {decoded_path}: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/containers/export', methods=['POST'])
+def export_container():
+    """
+    Compress the entire /workspace directory and return the zip archive.
+    """
+    try:
+        # Path to the directory we want to compress
+        export_dir = "/workspace/"
+
+        # In-memory file-like object to hold the zip archive
+        zip_buffer = BytesIO()
+
+        # Create a Zip file inside the buffer
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            # Walk through the directory and add files to the zip archive
+            for root, dirs, files in os.walk(export_dir):
+                for file in files:
+                    # Full path to the file
+                    file_path = os.path.join(root, file)
+                    # Add file to zip, with relative path inside the zip
+                    arcname = os.path.relpath(file_path, export_dir)
+                    zip_file.write(file_path, arcname)
+
+        # Reset the buffer's position to the beginning before sending
+        zip_buffer.seek(0)
+
+        # Send the zip file as a response with a download prompt
+        return send_file(zip_buffer, as_attachment=True, mimetype='application/zip', download_name='workspace_export.zip')
+
+    except Exception as e:
+        # Handle any exceptions
+        logging.error(f"Error exporting workspace: {str(e)}")
+        return jsonify({"error": f"Error exporting workspace: {str(e)}"}), 500
     
     
 

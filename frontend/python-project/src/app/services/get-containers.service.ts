@@ -128,4 +128,21 @@ export class ContainerService {
     }
     return this.http.post<any>(`${this.apiUrl}/revoke`, { containerId, userId }, { headers });
   }
+
+  // Method to trigger container export
+  exportContainer(containerId: string): Observable<Blob> {
+    let headers = new HttpHeaders();
+
+    if (isPlatformBrowser(this.platformId)) {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+      }
+    }
+
+    const url = `${this.apiUrl}/export`;  // Assuming export endpoint is here
+    const body = { containerId };  // Send the containerId in the request body
+
+    return this.http.post(url, body, { headers, responseType: 'blob' });
+  }
 }

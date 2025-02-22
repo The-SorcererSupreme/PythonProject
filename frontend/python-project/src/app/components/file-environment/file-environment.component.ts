@@ -8,12 +8,15 @@ import { FileUploadService } from '../../services/file-upload.service';
 import { NgxDropzoneModule } from 'ngx-dropzone'; // Import the dropzone module
 import { NgIf, NgFor, isPlatformBrowser } from '@angular/common';
 import { ContainersComponent } from '../containers/containers.component';
+import { MenuItem } from 'primeng/api';
+import { ContextMenu } from 'primeng/contextmenu';
 
 interface TreeNode {
   label: string;
   data?: any;
   children?: TreeNode[];
   leaf?: boolean; // Indicates whether the node is a leaf (no children)
+  path?: string;  // Add path property to store the full file/folder path
 }
 
 @Component({
@@ -26,6 +29,7 @@ interface TreeNode {
     NgIf,
     NgFor,
     ContainersComponent,
+    ContextMenu,
   ],
   providers: [
     FileContentComponent
@@ -37,8 +41,9 @@ interface TreeNode {
 
 export class FileEnvironmentComponent /*implements OnInit*/ {
   @ViewChild(ContainersComponent) containersComponent!: ContainersComponent;  // Reference to ContainersComponent
+  @ViewChild(ContextMenu) menu!: ContextMenu;
   @Output() fileSelected = new EventEmitter<{ filePath: string, containerId: string }>(); // Emit selected file path
-
+  
   loading: boolean = false; // Indicates whether data is being loaded
   nodes: TreeNode[] = []; // Tree structure for <p-tree>
   selectedNode: TreeNode | null = null; // Selected node
@@ -47,20 +52,24 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
   files: File[] = [];
   contentLoaded = false;
   selectedContainerId: string | null = null; // Store the container ID persistently
-
+  menuItems: MenuItem[] = [];
+  
   constructor(private folderService: FolderService,
     private loadContent: FileContentComponent,
     private fileUploadService: FileUploadService,
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object // Inject PLATFORM_ID  
   ) {}
-
+  
   /*ngOnInit() {
     this.loadFolderContents();
-  }*/
-    ngOnInit() {
-      this.loadFolderStructureFromStorage();
-    
+    }*/
+   ngOnInit() {
+     this.loadFolderStructureFromStorage();
+     this.menuItems = [
+       { label: 'Download', icon: 'pi pi-download', command: () => this.downloadFile() }
+      ];
+      
       // Retrieve the last selected container ID
       if (isPlatformBrowser(this.platformId)) {
         const savedContainerId = localStorage.getItem('selectedContainerId');
@@ -71,7 +80,70 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
         }
       }
     }
-  
+    
+    onContainerSelected(containerId: string) {
+      console.log('Received selected container:', containerId);
+      if (containerId) {
+        this.selectedContainerId = containerId;
+        localStorage.setItem('selectedContainerId', containerId); // Store in localStorage
+        this.loadContainerFolderStructure(containerId);
+      }
+    }  
+    
+    // Event handler for selecting a node
+    onNodeSelect(event: any) {
+      console.log("Left-click event:", event);
+      const node = event.node;
+      console.log("Node selected: " + node.data)
+      if (node.data === 'Folder') {
+        // Use the full path to load the folder's contents
+        const folderPath = node.path;  // Ensure that path exists
+        console.log('Navigating to folder:', folderPath); // Debug log
+        this.loadFolderContents(folderPath);
+      } else if (node.data === 'File') {
+        console.log('Selected file:', node.label);
+        if (node.path && this.selectedContainerId) {
+          console.log("Fetching file content with container ID:", this.selectedContainerId);
+          this.fileSelected.emit({
+            filePath: node.path,
+            containerId: this.selectedContainerId
+          });
+        } else {
+          console.error('File path missing for selected node');
+        }
+      }
+    }
+    
+    onRightClick(event: any) {
+      event.preventDefault();  // Prevent the default context menu
+      
+      // If node is not provided in the event, fallback to the selectedNode
+      const node = event.node || this.selectedNode;
+    
+      if (node) {
+        console.log("Right-click detected on node:", node);
+        console.log("Node data:", node.data);  // This should be 'File' or 'Folder'
+        
+        // Check the type of the node (file or folder) and update the menu accordingly
+        if (node.data === 'File') {
+          this.menuItems = [
+            { label: 'Download File', icon: 'pi pi-download', command: () => this.downloadFile() }
+          ];
+        } else if (node.data === 'Folder') {
+          this.menuItems = [
+            { label: 'Download Folder', icon: 'pi pi-download', command: () => this.downloadFile() }
+          ];
+        }
+    
+        // Show the custom context menu
+        if (this.menu) {
+          this.menu.show(event);
+        }
+      } else {
+        console.error("No valid node found in right-click event.");
+      }
+    }
+    
     loadFolderStructureFromStorage() {
       if (isPlatformBrowser(this.platformId)) {
         const savedStructure = localStorage.getItem('folderStructure');
@@ -175,36 +247,6 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
     });
   }
 
-  onContainerSelected(containerId: string) {
-    console.log('Received selected container:', containerId);
-    if (containerId) {
-      this.selectedContainerId = containerId;
-      localStorage.setItem('selectedContainerId', containerId); // Store in localStorage
-      this.loadContainerFolderStructure(containerId);
-    }
-  }  
-
-  // Event handler for selecting a node
-  onNodeSelect(event: any) {
-    const node = event.node;
-    if (node.data === 'Folder') {
-      // Use the full path to load the folder's contents
-      const folderPath = node.path;  // Ensure that path exists
-      console.log('Navigating to folder:', folderPath); // Debug log
-      this.loadFolderContents(folderPath);
-    } else if (node.data === 'File') {
-      console.log('Selected file:', node.label);
-      if (node.path && this.selectedContainerId) {
-        console.log("Fetching file content with container ID:", this.selectedContainerId);
-        this.fileSelected.emit({
-          filePath: node.path,
-          containerId: this.selectedContainerId
-        });
-      } else {
-        console.error('File path missing for selected node');
-      }
-    }
-  }
 
   onDrop(event: any) {
     console.log('Drop event:', event);
@@ -259,6 +301,46 @@ export class FileEnvironmentComponent /*implements OnInit*/ {
     });
   }
   
+
+  // Function to trigger file download
+  downloadFile() {
+    if (!this.selectedNode || !this.selectedNode.path) {
+      console.error("No file selected for download.");
+      return;
+    }
+  
+    const filePath = this.selectedNode.path;
+    const fileName = this.selectedNode.label; // Use label for file name
+    const token = localStorage.getItem("auth_token");
+    
+    if (!token) {
+      console.error("No authentication token found!");
+      return;
+    }
+  
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+  
+    this.http.get(`http://localhost:8000/api/download?filePath=${filePath}`, {
+      headers,
+      responseType: 'blob' // Handle binary data (file download)
+    }).subscribe({
+      next: (blob) => {
+        const a = document.createElement('a');
+        const url = window.URL.createObjectURL(blob);
+        a.href = url;
+        a.download = fileName; // Name of the file being downloaded
+        document.body.appendChild(a);
+        a.click();
+  
+        // Prevent the download link from retaining focus after the click
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        }, 0);
+      },
+      error: (error) => console.error("Download failed:", error)
+    });
+  }
   
 
   // Placeholder methods for button actions

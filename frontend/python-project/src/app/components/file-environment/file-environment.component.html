@@ -11,9 +11,11 @@
               selectionMode="single"
               [(selection)]="selectedNode"
               (onNodeSelect)="onNodeSelect($event)"
+              (contextmenu)="onRightClick($event); false"
               loadingIcon="pi pi-spinner"
               [loading]="loading">
             </p-tree>
+            <p-contextMenu #menu [model]="menuItems"></p-contextMenu>
             <button (click)="clearFolderStructure()">Create new container</button>
             </div>
       <!-- Show options to connect when no content is loaded -->

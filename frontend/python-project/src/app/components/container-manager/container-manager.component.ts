@@ -168,4 +168,23 @@ export class ContainerManagerComponent implements OnInit {
         }
       );
     }
+
+
+    exportContainer(containerId: string) {
+      this.containerService.exportContainer(containerId).subscribe(
+        (response: Blob) => {
+          const blob = response;
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `container_${containerId}_export.zip`; // Adjust filename as necessary
+          link.click();
+          window.URL.revokeObjectURL(url);
+        },
+        (error) => {
+          console.error('Error exporting container:', error);
+          this.errorMessage = 'Error exporting container.';
+        }
+      );
+    }
 }
