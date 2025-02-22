@@ -13,23 +13,26 @@ export class ContainerService {
   constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) { }
 
   // Function to get containers for the current user
-  getContainers(): Observable<any> {
+  getContainers(includeShared: boolean = false): Observable<any> {
     let headers = new HttpHeaders();
+    let url = this.apiUrl;
 
     // Check if we are in the browser environment
     if (isPlatformBrowser(this.platformId)) {
       console.log("Get Containers - It's a Browser!")
-      const token = localStorage.getItem('auth_token');  // Retrieve the token from local storage (or session storage)
+      const token = localStorage.getItem('auth_token');  
       if (token) {
         console.log("Get Containers - Token is set!")
-        // Set headers with the JWT token if token exists
         headers = headers.set('Authorization', `Bearer ${token}`);
-        console.log(`Token is: ${token}`)
       }
     }
 
-    // Now, you can make the request with the headers (which will be empty if not in the browser)
-    return this.http.get(this.apiUrl, { headers });
+    // Append query param if includeShared is true
+    if (includeShared) {
+      url += '?includeShared=true';
+    }
+
+    return this.http.get(url, { headers });
   }
 
   updateContainerName(containerId: string, newName: string): Observable<any> {
@@ -89,16 +92,40 @@ export class ContainerService {
 
       // Get users with access to a container
   getContainerAccess(containerId: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/access?containerId=${containerId}`);
+    let headers = new HttpHeaders();
+    
+      if (isPlatformBrowser(this.platformId)) {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          headers = headers.set('Authorization', `Bearer ${token}`);
+        }
+      }
+    return this.http.get<any>(`${this.apiUrl}/access?containerId=${containerId}`, { headers });
   }
 
   // Share a container with a new user
   shareContainer(containerId: string, username: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/share`, { containerId, username });
+    let headers = new HttpHeaders();
+    
+    if (isPlatformBrowser(this.platformId)) {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+      }
+    }
+    return this.http.post<any>(`${this.apiUrl}/share`, { containerId, username }, { headers });
   }
 
   // Revoke access for a user
   revokeAccess(containerId: string, userId: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/revoke`, { containerId, userId });
+    let headers = new HttpHeaders();
+    
+    if (isPlatformBrowser(this.platformId)) {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+      }
+    }
+    return this.http.post<any>(`${this.apiUrl}/revoke`, { containerId, userId }, { headers });
   }
 }

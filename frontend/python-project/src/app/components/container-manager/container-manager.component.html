@@ -46,7 +46,7 @@
               <h4>Shared Users</h4>
               <ul>
                 <li *ngFor="let user of usersWithAccess">
-                  {{ user.username }}
+                  {{ user }}
                   <button (click)="revokeAccess(container.id, user.id)">Revoke</button>
                 </li>
               </ul>

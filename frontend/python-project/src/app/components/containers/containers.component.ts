@@ -39,12 +39,12 @@ export class ContainersComponent implements OnInit {
   }
 
   fetchContainers(): void {
-    this.containerService.getContainers().subscribe(
+    this.containerService.getContainers(true).subscribe(  // Pass true to include shared containers
       (response) => {
         this.containers = response.containers;
         this.errorMessage = null;
   
-        // Check if containers length is 0 and clear the folderStructure from localStorage
+        // Clear localStorage if no containers are available
         if (this.containers.length === 0) {
           localStorage.removeItem('folderStructure');
           localStorage.removeItem('selectedContainerId');

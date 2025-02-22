@@ -15,42 +15,59 @@ container_routes = Blueprint('container_routes', __name__)
 @container_routes.route('/api/containers', methods=['GET'])
 @token_required  # Apply the token_required decorator to protect the route
 def get_user_containers(session_id):
-    
-    # Fetch containers from the database for the user
     try:
+        include_shared = request.args.get('includeShared', 'false').lower() == 'true'
+
         print("Inside container_routes")
         db = Database()
-        if session_id:
-            query = "SELECT user_id FROM sessions WHERE id = %s"
-            user_id = db.fetch_query(query, (session_id,))
-            user_id = user_id[0]['user_id']
-        print(f"Fetching containers from user_id: {user_id}")
+
+        # Get the actual user_id
+        query = "SELECT user_id FROM sessions WHERE id = %s"
+        user_id_result = db.fetch_query(query, (session_id,))
+        if not user_id_result:
+            return jsonify({'error': 'Session not found'}), 404
+        user_id = int(user_id_result[0]['user_id'])
         
+        print(f"Fetching containers for user_id: {user_id}")
+
+        # Fetch the user's own containers
         query = "SELECT * FROM containers WHERE user_id = %s"
         containers = db.fetch_query(query, (user_id,))
 
-        # Initialize Docker client manager to fetch exsisting containers
+        # If includeShared is true, fetch containers shared with this user
+        if include_shared:
+            shared_query = """
+            SELECT c.* FROM containers c
+            JOIN shared_containers sc ON c.id = sc.container_id
+            WHERE sc.user_id = %s
+            """
+            shared_containers = db.fetch_query(shared_query, (user_id,))
+            containers.extend(shared_containers)  # Combine both lists
+
+        # Initialize Docker client manager to filter out non-existent containers
         docker_manager = DockerClientManager()
         valid_containers = []
+
         print(f"Available containers for user with id {user_id}:\n{containers}")
         for container in containers:
             try:
                 container_id = container['container_id']
-                print(f"Checking if container {container_id} exsists...")
+                print(f"Checking if container {container_id} exists...")
                 docker_manager.get_container(container_id)
                 valid_containers.append(container)  # Keep the valid container
-                print("It exsists!")
+                print("It exists!")
             except RuntimeError:
                 # Container does not exist, delete it from the database
-                print("It does not! Deleting from database...")
-                query  = "DELETE FROM containers WHERE container_id = %s AND user_id = %s"
-                db.execute_query(query, (container_id, user_id))
+                print(f"Container {container_id} does not exist! Deleting from database...")
+                query = "DELETE FROM containers WHERE container_id = %s"
+                db.execute_query(query, (container_id,))
                 print("Deleted container!")
-        
+
         return jsonify({
             'message': 'Containers fetched successfully',
-            'containers': containers
+            'containers': valid_containers
         }), 200
+
     except Exception as e:
         return jsonify({'error': f"Error fetching containers: {e}"}), 500
 
@@ -207,13 +224,21 @@ def share_container(session_id):
     try:
         data = request.get_json()
         container_id_from_db = data.get('containerId')
-        target_user_id = data.get('userId')
+        target_username = data.get('username')  # Expect username instead of userId
 
-        # Fetch the container's owner from the database
         db = Database()
-        query = "SELECT user_id, container_name FROM containers WHERE container_id = %s"
-        result = db.fetch_query(query, (container_id_from_db,))
 
+        # Get the user_id from username
+        user_query = "SELECT id FROM users WHERE username = %s"
+        user_result = db.fetch_query(user_query, (target_username,))
+        if not user_result:
+            return jsonify({'error': 'User not found'}), 404
+        
+        target_user_id = user_result[0]['id']
+
+        # Fetch the container's owner
+        query = "SELECT user_id, container_name FROM containers WHERE id = %s"
+        result = db.fetch_query(query, (container_id_from_db,))
         if not result:
             return jsonify({'error': 'Container not found in the database'}), 404
 
@@ -221,7 +246,7 @@ def share_container(session_id):
         container_name = result[0]['container_name']
 
         # Only the owner can share the container
-        if container_owner_id != session_id:
+        if int(container_owner_id) != int(session_id):
             return jsonify({'error': 'You are not the owner of this container.'}), 403
 
         # Share the container with the target user
@@ -231,10 +256,35 @@ def share_container(session_id):
         """
         db.execute_query(insert_query, (target_user_id, container_id_from_db))
 
-        return jsonify({'message': f"Container '{container_name}' shared successfully with user {target_user_id}."}), 200
+        return jsonify({'message': f"Container '{container_name}' shared successfully with user {target_username}."}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
+
+@container_routes.route('/api/containers/access', methods=['GET'])
+@token_required
+def get_container_access(session_id):
+    try:
+        container_id_from_db = request.args.get('containerId')
+
+        # Fetch users who have access to the container
+        db = Database()
+        query = """
+        SELECT u.username
+        FROM users u
+        JOIN shared_containers sc ON u.id = sc.user_id
+        WHERE sc.container_id = %s;
+        """
+        result = db.fetch_query(query, (container_id_from_db,))
+
+        if not result:
+            return jsonify({'message': 'No users have access to this container.'}), 404
+
+        return jsonify({'users_with_access': [row['username'] for row in result]}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
 
 @container_routes.route('/api/containers/revoke', methods=['POST'])
 @token_required
@@ -264,29 +314,5 @@ def revoke_access(session_id):
         db.execute_query(delete_query, (container_id_from_db, target_user_id))
 
         return jsonify({'message': f"Access to container '{container_name}' revoked for user {target_user_id}."}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
-
-@container_routes.route('/api/containers/access', methods=['GET'])
-@token_required
-def get_container_access(session_id):
-    try:
-        container_id_from_db = request.args.get('containerId')
-
-        # Fetch users who have access to the container
-        db = Database()
-        query = """
-        SELECT u.username, u.id
-        FROM users u
-        JOIN shared_containers sc ON u.id = sc.user_id
-        WHERE sc.container_id = %s;
-        """
-        result = db.fetch_query(query, (container_id_from_db,))
-
-        if not result:
-            return jsonify({'message': 'No users have access to this container.'}), 404
-
-        return jsonify({'users_with_access': result}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

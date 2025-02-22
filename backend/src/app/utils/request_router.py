@@ -17,6 +17,9 @@ class RequestRoutingMiddleware:
             "/api/containers/start",
             "/api/containers/stop",
             "/api/containers/delete",
+            "/api/containers/access",
+            "/api/containers/share",
+            "/api/containers/revoke"
             ]  # CHANGE TO backend_routes
         print(f"------------------------------")
         print("Request router initiated")

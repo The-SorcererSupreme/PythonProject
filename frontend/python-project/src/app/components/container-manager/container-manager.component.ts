@@ -31,7 +31,7 @@ export class ContainerManagerComponent implements OnInit {
   }
 
   fetchContainers(): void {
-    this.containerService.getContainers().subscribe(
+    this.containerService.getContainers(false).subscribe(  // Fetch only owned containers
       (response) => {
         this.containers = response.containers;
         this.errorMessage = null;

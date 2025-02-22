@@ -89,9 +89,10 @@ def create_tables(cursor):
     CREATE TABLE IF NOT EXISTS shared_containers (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        container_id TEXT NOT NULL,
+        container_id INTEGER NOT NULL,
         shared_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (container_id) REFERENCES containers(container_id) ON DELETE CASCADE
+        UNIQUE (user_id, container_id),
+        FOREIGN KEY (container_id) REFERENCES containers(id) ON DELETE CASCADE
     );
     """)
 
