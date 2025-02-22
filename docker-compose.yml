@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  frontend:
+    build: ./frontend/python-project/
+    container_name: angular_app
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
+  backend:
+    build: ./backend/src/
+    container_name: python_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Allow backend to manage containers
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
