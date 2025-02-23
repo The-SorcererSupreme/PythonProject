@@ -6,7 +6,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FileContentComponent } from '../../components/file-content/file-content.component';
 import { FileUploadService } from '../../services/file-upload.service';
 import { NgxDropzoneModule } from 'ngx-dropzone'; // Import the dropzone module
-import { NgIf, NgFor, isPlatformBrowser } from '@angular/common';
+import { NgIf, isPlatformBrowser } from '@angular/common';
 import { ContainersComponent } from '../containers/containers.component';
 import { MenuItem } from 'primeng/api';
 import { ContextMenu } from 'primeng/contextmenu';
@@ -24,10 +24,8 @@ interface TreeNode {
   standalone: true,
   imports: [
     TreeModule,
-    FileContentComponent,
     NgxDropzoneModule,
     NgIf,
-    NgFor,
     ContainersComponent,
     ContextMenu,
   ],

@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request
 
 class AuthenticationService:
     """Handles authentication logic for the application."""
@@ -7,7 +7,7 @@ class AuthenticationService:
     def extract_token(request):
         """Extracts the Bearer token from the Authorization header."""
         auth_header = request.headers.get("Authorization", "")
-        print(f"Checking bearer in: {request.headers}")
+        #print(f"Checking bearer in: {request.headers}")
         if auth_header.startswith("Bearer "):
             return auth_header.split("Bearer ")[1]
         return None

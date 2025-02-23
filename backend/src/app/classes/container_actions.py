@@ -85,7 +85,8 @@ class DockerContainerManager:
                 volumes=volumes,
                 environment=environment,
                 command=command,
-                detach=True
+                detach=True,
+                network="pythonproject_app_network",
             )
             return container
         except Exception as e:

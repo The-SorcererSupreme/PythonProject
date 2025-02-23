@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { NgIf } from '@angular/common';
-import { HeaderComponent } from '../header/header.component';
 import { FileEnvironmentComponent } from '../file-environment/file-environment.component';
 import { FileContentComponent } from '../file-content/file-content.component';
 import { AngularSplitModule } from 'angular-split';
@@ -12,7 +11,6 @@ import { AuthService } from '../../services/auth.service';
     imports: [
         MatToolbarModule,
         NgIf,
-        HeaderComponent,
         FileEnvironmentComponent,
         FileContentComponent,
         AngularSplitModule,

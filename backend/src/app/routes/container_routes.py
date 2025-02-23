@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify, current_app
 from app.classes.database_actions import Database
 from functools import wraps
 from app.classes.container_actions import DockerClientManager
+from app.utils.logging_config import logger
 from app.utils.auth import token_required  # Import the decorator
 
 
@@ -241,12 +242,19 @@ def share_container(session_id):
         result = db.fetch_query(query, (container_id_from_db,))
         if not result:
             return jsonify({'error': 'Container not found in the database'}), 404
-
         container_owner_id = result[0]['user_id']
-        container_name = result[0]['container_name']
+        container_name = result[0]['container_name']   
+
+        # Fetch the user_id related to the session
+        query = "SELECT user_id FROM sessions WHERE id = %s"
+        result = db.fetch_query(query, (session_id,))
+        if not result:
+            return jsonify({'error': 'Owner of session not found in database'}), 404
+        user_id = result[0]['user_id']
 
         # Only the owner can share the container
-        if int(container_owner_id) != int(session_id):
+        logger.info(f"Comparing {container_owner_id} with {user_id}")
+        if int(container_owner_id) != int(user_id):
             return jsonify({'error': 'You are not the owner of this container.'}), 403
 
         # Share the container with the target user

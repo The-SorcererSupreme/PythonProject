@@ -1,14 +1,15 @@
-version: '3.8'
 services:
   frontend:
     build: ./frontend/python-project/
     container_name: angular_app
     ports:
-      - "8080:80"
+      - "8080:4200"
     depends_on:
       - backend
     networks:
       - app_network
+    environment:
+      - BACKEND_URL=http://backend:8000
 
   backend:
     build: ./backend/src/
@@ -16,10 +17,45 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock  # Allow backend to manage containers
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./backend/.env:/app/.env
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=codepilot
+      - DB_USER=datawizard
+      - DB_PASSWORD=#zHGmK$dO*e$0cugeugcnKi$P18BuA2U
+      - SECRET_JWT_KEY=EY5R120iP7OBEsD@QjtNwu*qo^oI*4bu
+      - DEBUG=True
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"      # Assign 2 CPU cores
+          memory: "2G"     # Assign 2GB RAM
+        reservations:
+          cpus: "1.0"      # Ensure at least 1 CPU core is available
+          memory: "512M"   # Minimum 512MB RAM
+
+  postgres:
+    build: ./database/  # Use the custom Dockerfile
+    container_name: postgres_db
+    environment:
+      - POSTGRES_DB=codepilot
+      - POSTGRES_USER=datawizard
+      - POSTGRES_PASSWORD=#zHGmK$dO*e$0cugeugcnKi$P18BuA2U
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - app_network
 
 networks:
   app_network:
     driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

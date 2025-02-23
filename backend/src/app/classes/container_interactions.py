@@ -25,10 +25,10 @@ class DockerService:
 
 
 
-    def get_file_structure_from_container(self, container_ip, archive_name):
+    def get_file_structure_from_container(self, container_name, archive_name):
         """Fetch the file structure from the running container via its API."""
         try:
-            url = f'http://{container_ip}:6000/api/file-structure'
+            url = f'http://{container_name}:6000/api/file-structure'
             response = requests.get(url)
             response.raise_for_status()  # Check if the request was successful
             return response.json()  # Return the directory structure as JSON
@@ -105,9 +105,9 @@ class DockerService:
 
             # Upload file structure to the container
             self.upload_file_to_container(container_name, file_bytes, archive_name)
-            time.sleep(4)
+            time.sleep(5)
             # Fetch the file structure from the container
-            file_structure = self.get_file_structure_from_container(container_ip, archive_name)
+            file_structure = self.get_file_structure_from_container(container_name, archive_name)
             print("File structure:", file_structure)
 
             # Save the container information to the database, linking to the user
